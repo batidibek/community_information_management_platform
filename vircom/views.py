@@ -85,10 +85,13 @@ def change_post(request, community_id, post_id):
         post.save()
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
-def new_data_type(request, community_name):        
+def new_data_type(request, community_name, data_type_id):        
     community = get_object_or_404(Community, name=community_name)
-    data_type = DataType(name="", community=community, fields = {})
-    data_type.save()
+    if data_type_id == '':
+        data_type = DataType(name="", community=community, fields = {})
+        data_type.save()
+    else:
+        data_type = DataType.objects.get(pk=data_type_id)   
     context = {
         'community': community,
         'data_type': data_type,
@@ -99,18 +102,33 @@ def create_data_type(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
     data_type = DataType.objects.get(pk=data_type_id)
     data_type.title = request.POST['title']
-    post = Post(title=title, body=body, pub_date=datetime.datetime.now(),community=community)
-    if post.title == "" or post.body == "":
-        return render(request, 'vircom/new_post.html', {
+    if data_type.title == "":
+        return render(request, 'vircom/new_data_type.html', {
             'community': community,
-            'error_message': "Title and Body fields cannot be empty.",
+            'error_message': "Title field cannot be empty.",
+        })
+    elif data_type.fields == {}:  
+        return render(request, 'vircom/new_data_type.html', {
+            'community': community,
+            'error_message': "You need to add at least one custom field.",
         })
     else:
-        post.save()
+        data_type.save()
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))           
 
-def new_field(request):
-    pass
+def new_field(request, community_name, data_type_id):
+    community = get_object_or_404(Community, name=community_name)
+    data_type = get_object_or_404(DataType, id=data_type_id)
+    context = {
+        'community': community,
+        'data_type': data_type,
+    }
+    #TO DO not complete yet
+    return render(request, 'vircom/new_field.html', context)
+    
 
-def add_field(request):
-    pass
+def add_field(request, community_id, data_type_id):
+    community = get_object_or_404(Community, pk=community_id)
+    data_type = DataType.objects.get(pk=data_type_id)
+    #TO DO not complete yet
+    return HttpResponseRedirect(reverse('vircom:new_data_type', args=(community.name,)))

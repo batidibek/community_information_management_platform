@@ -1,5 +1,5 @@
 <a href="{% url 'vircom:index' %}">Homepage</a>
-<h1>{{ community }}</h1>
+<h1>{{ community.name }}</h1>
 
 {% if post_list %}
     <ul>
@@ -14,3 +14,4 @@
 {% endif %}
 
 <div><a href="{% url 'vircom:new_post' community.name %}">Create New Post</a></div>
+<div><a href="{% url 'vircom:new_data_type' community.name ''%}">Create New Data Type</a></div>

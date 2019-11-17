@@ -1,4 +1,4 @@
-<h1>Create a new post for {{ community }}</h1>
+<h1>Create a new post for {{ community.name }}</h1>
 {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'vircom:create_post' community.id %}" method="post">
     {% csrf_token %}
