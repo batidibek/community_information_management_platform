@@ -1,0 +1,8 @@
+<h1>Create a new data type for {{ community }}</h1>
+{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+<form action="{% url 'vircom:create_data_type' community.id %}" method="post">
+    {% csrf_token %}
+    <p>Name: <input type="text" name="title"></p>
+    <form action="{% url 'vircom:new_field' community.id data_type.id%}"><button type='add new field'>Delete</button></form>
+    <p><input type="submit" value="Create Data Type"></p>
+</form>
