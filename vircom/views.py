@@ -172,12 +172,12 @@ def new_data_type_object(request, community_name, data_type_name):
     context = {
         'community': community,
         'data_type': data_type,
-
+        'fields': 'fields'
     }
     return render(request, 'vircom/new_data_type_object.html', context) 
 
 def create_data_type_object(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
     data_type = get_object_or_404(DataType, pk=data_type_id)
-    
+    #TO DO not completed
     return HttpResponseRedirect(reverse('vircom:new_data_type_object', args=(community.name,data_type.name)))               
