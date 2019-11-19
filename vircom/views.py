@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Community, Post, DataType, Field
+from .models import Community, Post, DataType, Field, DataTypeObject
 from django.http import Http404
 from django.urls import reverse
 import datetime
@@ -110,16 +110,15 @@ def new_data_type(request, community_name, fields = '{"fields":[]}'):
 
 def create_data_type(request, community_id, fields):
     community = get_object_or_404(Community, pk=community_id)
-    #data_type = get_object_or_404(DataType, pk=data_type_id)
     name = request.POST['name']
     data_type = DataType(name=name, community=community)
-    data_type_list = DataType.objects.filter(name=name, community=community)
+    data_type_list = DataType.objects.filter(community=community)
     for dt in data_type_list:
         if dt.name == name:
             return render(request, 'vircom/new_data_type.html', {
             'community': community,
             'fields': fields,
-            'error_message': "There is a data type called " + name + "in this community.",
+            'error_message': "There is a data type called " + name + " in this community.",
         })
     if data_type.name == "":
         return render(request, 'vircom/new_data_type.html', {
@@ -166,53 +165,19 @@ def add_field(request, community_id, fields):
 
 # DATA TYPE OBJECT    
 
-def new_data_type_object(request, community_name, fields = '{"fields":[]}'):        
+def new_data_type_object(request, community_name, data_type_name):        
     community = get_object_or_404(Community, name=community_name)
-    if fields == '{"fields":[]}':
-        context = {
+    data_type = get_object_or_404(DataType, name=data_type_name, community=community)
+    fields = Field.objects.filter(data_type=data_type,community=community)
+    context = {
         'community': community,
-        'fields': fields,
-        'field_list': '',
-    }
-    else:
-        field_list = json.loads(fields)
-        context = {
-            'community': community,
-            'fields': fields,
-            'field_list': field_list,
-        }
-    return render(request, 'vircom/new_data_type.html', context) 
+        'data_type': data_type,
 
-def create_data_type_object(request, community_id, fields):
+    }
+    return render(request, 'vircom/new_data_type_object.html', context) 
+
+def create_data_type_object(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
-    #data_type = get_object_or_404(DataType, pk=data_type_id)
-    name = request.POST['name']
-    data_type = DataType(name=name, community=community)
-    data_type_list = DataType.objects.filter(name=name, community=community)
-    for dt in data_type_list:
-        if dt.name == name:
-            return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'fields': fields,
-            'error_message': "There is a data type called " + name + "in this community.",
-        })
-    if data_type.name == "":
-        return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'fields': fields,
-            'error_message': "Title field cannot be empty.",
-        })  
-    if fields == '{"fields":[]}':
-        return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'fields': fields,
-            'error_message': "You need to add at least one custom field.",
-        })
-    else:
-        data_type.save()
-        fields_dict = {}
-        fields_dict = json.loads(fields)
-        for field in fields_dict['fields']:
-            f = Field(name=field["name"],field_type=field["field_type"],required=field["required"], community=community,data_type=data_type)
-            f.save()
-        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))               
+    data_type = get_object_or_404(DataType, pk=data_type_id)
+    
+    return HttpResponseRedirect(reverse('vircom:new_data_type_object', args=(community.name,data_type.name)))               
