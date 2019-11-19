@@ -49,8 +49,8 @@ class DataTypeObject(models.Model):
     community = models.ForeignKey(Community, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
     fields = JSONField()
-    def __str__(self):
-            return self.title
+    # def __str__(self):
+    #         return self.title
 
     
     

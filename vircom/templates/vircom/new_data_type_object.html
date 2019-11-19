@@ -14,7 +14,7 @@
 <body>
 
     <h1> Create a new {{ data_type.name }} for {{ community.name }}</h1>
-    {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+    
 
     <form action="{% url 'vircom:create_data_type_object' community.id data_type.id%}" method="post" novalidate>
         {% csrf_token %}
@@ -22,6 +22,9 @@
         <div class="form-group">
             <label for="{{field.name}}">{{field.name}}</label>
             <small id="fieldType" class="form-text text-muted">{{field.field_type}}</small>
+            {% if field.required == "Yes"%}
+            {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+            {% endif %}
             {% if field.field_type == "Text"%}
             <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 placeholder="Enter {{field.name}}" name="{{field.pk}}">

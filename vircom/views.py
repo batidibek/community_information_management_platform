@@ -186,11 +186,12 @@ def create_data_type_object(request, community_id, data_type_id):
     f['fields'] = []
     for field in fields:
         field_id = str(field.pk)
-        if request.POST[field_id] == "" or None and field.required == Yes:
+        if request.POST[field_id] == "" or None and field.required == "Yes":
             return render(request, 'vircom/new_data_type_object.html', {
             'community': community,
             'data_type': data_type,
-            'error_message_fields': "You cannot leave required fields empty.",
+            'fields': fields,
+            'error_message': "You cannot leave required fields empty.",
         }) 
         f['fields'].append(
             {
@@ -203,4 +204,4 @@ def create_data_type_object(request, community_id, data_type_id):
     fields_json = json.dumps(f)
     data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=fields_json)
     data_type_object.save()
-    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name)))               
+    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))               
