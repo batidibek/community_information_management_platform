@@ -30,12 +30,30 @@ def index(request):
 def cummunity_detail(request, community_name):
     community = get_object_or_404(Community, name=community_name)
     data_type_list = DataType.objects.filter(community=community)
-    #post_list = Post.objects.filter(community=community)
-    post_list = serializers.serialize( "python", Post.objects.filter(community=community))
+    data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    post_list = Post.objects.filter(community=community).order_by('-pub_date')
+    # posts = []
+    
+    # for post in post_list:
+    #     conter = 0
+    #     for data in data_type_object_list:
+    #         if post.items.pub_date > data.items.pub_date:
+    #             posts.append(post)
+    #             counter = 1
+    #             break
+    #         else:
+    #             posts.append(data)
+    #     if conter == 0:
+    #         posts.append(post)        
+
     context = {
         'community': community,
         'post_list': post_list,
-        'data_type_list': data_type_list,
+        'data_type_list':  data_type_list,
+        'data_type_object_list': data_type_object_list,
+        # 'post_list': post_list,
+        # 'data_type_list': data_type_list,
+        # 'data_type_object_list': data_type_object_list,
     }
     return render(request, 'vircom/community_detail.html', context)
 
