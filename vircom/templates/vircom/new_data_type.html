@@ -9,38 +9,30 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 </head>
 
 <body>
-
-
-
-    <!-- <h1>Create a new data type for {{ community.name }}</h1> -->
-    <!-- {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-<form action="{% url 'vircom:create_data_type' community.id %}" method="post">
-    {% csrf_token %}
-    <p>Name: <input type="text" name="name"></p>
-    <p><input type="submit" value="Create Data Type"></p>
-</form> -->
 
     <h1> Create a new data type for {{ community.name }}</h1>
     {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
 
-    <form action="{% url 'vircom:create_data_type' community.id data_type.id%}" method="post" novalidate>
+    <form action="{% url 'vircom:create_data_type' community.id fields%}" method="post" novalidate>
+        {% csrf_token %}
         <div class="form-group">
             <label for="InputDataTypeName">Data Type Name</label>
             <input type="text" class="form-control" id="InputDataTypeName" aria-describedby="dataTypeName"
-                placeholder="Enter field name" name="dataTypeName" required>
+                placeholder="Enter data type name" name="name" required>
             <div class="invalid-feedback">
                 You should enter a data type name.
             </div>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-
-    <form action="{% url 'vircom:add_field' community.id  data_type.id%}" method="post" novalidate>
+    <br /><br /><br /><br /><br /><br />
+    {% if error_message_fields %}<p style="color: red"><strong>{{ error_message_fields }}</strong></p>{% endif %}
+    <form action="{% url 'vircom:add_field' community.id fields%}" method="post" novalidate>
+        {% csrf_token %}
         <div class="form-group">
             <label for="InputName">Field Name</label>
             <input type="text" class="form-control" id="InputName" aria-describedby="fieldName"
@@ -67,15 +59,16 @@
     </form>
 
 
-    {% if field_list %}
+    {% if field_list%}
     <ul>
-    {% for field in field_list %}
-        <li><div>{{ field.name}} - {{ field.type}} - { field.required}}
-    {% endfor %}
+        {% for field in field_list %}
+        <li>
+            <div>{{ field.name}} - {{ field.type}} - {{ field.required}}</div>
+                {% endfor %}
     </ul>
-{% else %}
+    {% else %}
     <p>No custom field added yet.</p>
-{% endif %}
+    {% endif %}
 
 
 

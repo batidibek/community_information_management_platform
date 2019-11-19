@@ -1,7 +1,7 @@
 <a href="{% url 'vircom:index' %}">Homepage</a>
 <h1>{{ community.name }}</h1>
 
-{% if post_list %}
+{% if post_list%}
     <ul>
     {% for Post in post_list %}
         <li><div>{{ Post.title}}</div><div>{{ Post.body}}</div><div>{{ Post.pub_date}}
