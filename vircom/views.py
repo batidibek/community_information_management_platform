@@ -87,34 +87,37 @@ def new_data_type(request, community_name):
     community = get_object_or_404(Community, name=community_name)
     data_type = DataType(name="", community=community)
     data_type.save()
+    field_list = Field.objects.filter(data_type=data_type, community=community)
     context = {
         'community': community,
         'data_type': data_type,
+        'field_list': field_list,
     }
     return render(request, 'vircom/new_data_type.html', context) 
 
 def create_data_type(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
-    community = get_object_or_404(DataType, pk=data_type_id)
+    data_type = get_object_or_404(DataType, pk=data_type_id)
     name = request.POST['name']
     data_type_list = DataType.objects.filter(name=name, community=community)
     for dt in data_type_list:
-        if dt.name = name:
+        if dt.name == name:
+            data.delete()
             return render(request, 'vircom/new_data_type.html', {
             'community': community,
-            'data_type': data_type,
             'error_message': "There is a data type called " + name + "in this community.",
         })
     if data_type.name == "":
+        data.delete()
         return render(request, 'vircom/new_data_type.html', {
             'community': community,
-            'data_type': data_type,
             'error_message': "Title field cannot be empty.",
         })
-    elif data_type.fields == '{"fields":[]}':  
+    field_list = Field.objects.filter(data_type=data_type, community=community)    
+    if field_list == None:
+        data.delete()
         return render(request, 'vircom/new_data_type.html', {
             'community': community,
-            'data_type': data_type,
             'error_message': "You need to add at least one custom field.",
         })
     else:
@@ -133,18 +136,10 @@ def create_data_type(request, community_id, data_type_id):
 
 def add_field(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
-    data_type = DataType.objects.get(pk=data_type_id)
+    data_type = get_object_or_404(DataType, pk=data_type_id)
     name = request.POST['name']
     field_type = request.POST['type']
     required = request.POST['required']
-    fields = json.loads(data_type.fields)
-    fields['fields'].append(
-        {
-            "name": name,
-            "type": field_type,
-            "required": required,
-        }
-    )
-    data_type.fields = json.dumps(fields)
-    data_type.save()
-    return HttpResponseRedirect(reverse('vircom:new_data_type', args=(community.name,data_type.id)))
+    field = Field(name=name,field_type=field_type,required=required, community=community,data_type=data_type)
+    field.save()
+    #return HttpResponseRedirect(reverse('vircom:new_data_type', args=(community.name)))

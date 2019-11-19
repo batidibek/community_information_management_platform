@@ -25,10 +25,10 @@
 </form> -->
 
     <h1> Create a new data type for {{ community.name }}</h1>
+    {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
 
-
-    <form action="{% url 'vircom:create_data_type' community.id %}" method="post" novalidate>
+    <form action="{% url 'vircom:create_data_type' community.id data_type.id%}" method="post" novalidate>
         <div class="form-group">
             <label for="InputDataTypeName">Data Type Name</label>
             <input type="text" class="form-control" id="InputDataTypeName" aria-describedby="dataTypeName"
@@ -40,7 +40,7 @@
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 
-    <form action="{% url 'vircom:add_field' community.id  %}" method="post" novalidate>
+    <form action="{% url 'vircom:add_field' community.id  data_type.id%}" method="post" novalidate>
         <div class="form-group">
             <label for="InputName">Field Name</label>
             <input type="text" class="form-control" id="InputName" aria-describedby="fieldName"
@@ -67,7 +67,15 @@
     </form>
 
 
-
+    {% if field_list %}
+    <ul>
+    {% for field in field_list %}
+        <li><div>{{ field.name}} - {{ field.type}} - { field.required}}
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No custom field added yet.</p>
+{% endif %}
 
 
 
