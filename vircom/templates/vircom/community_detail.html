@@ -10,8 +10,8 @@
     {% endfor %}
     </ul>
 {% else %}
-    <p>There is no post in this.</p>
+    <p>There is no post in this community.</p>
 {% endif %}
 
 <div><a href="{% url 'vircom:new_post' community.name %}">Create New Post</a></div>
-<div><a href="{% url 'vircom:new_data_type' community.name ''%}">Create New Data Type</a></div>
+<div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>

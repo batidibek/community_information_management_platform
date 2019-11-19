@@ -1,4 +1,4 @@
-<h1>Add a new custom field for {{ data_type.name }}</h1>
+<h1>Add a new custom field</h1>
 {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 <form action="{% url 'vircom:add_field' community.id data_type.id%}" method="post">
     {% csrf_token %}

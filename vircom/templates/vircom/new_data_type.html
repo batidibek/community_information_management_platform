@@ -1,8 +1,90 @@
-<h1>Create a new data type for {{ community.name }}</h1>
-{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-<form action="{% url 'vircom:create_data_type' community.id data_type.id%}" method="post">
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--    Load Bootstrap via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+
+
+<!-- <h1>Create a new data type for {{ community.name }}</h1> -->
+<!-- {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+<form action="{% url 'vircom:create_data_type' community.id %}" method="post">
     {% csrf_token %}
-    <p>Name: <input type="text" name="title"></p>
-    <form action="{% url 'vircom:new_field' community.id data_type.id%}"><button type='add new field'>Delete</button></form>
+    <p>Name: <input type="text" name="name"></p>
     <p><input type="submit" value="Create Data Type"></p>
-</form>
+</form> -->     
+<div class="col-xs-12">
+        <div class="col-md-12" >
+            <h1> Create a new data type for {{ community.name }}</h1>
+            
+
+        
+                <form action="{% url 'vircom:add_field' community.id %}" method="post" novalidate>
+                        <div class="form-group">
+                                <label for="InputDataTypeName">Data Type Name</label>
+                                <input type="text" class="form-control" id="InputDataTypeName" aria-describedby="dataTypeName" placeholder="Enter field name" name="dataTypeName" required>
+                                <div class="invalid-feedback">
+                                      You should enter a data type name.
+                                    </div>
+                              </div>
+                              <div id="field">
+                                    <div id="field0">
+
+                        <div class="form-group">
+                          <label for="InputName">Field Name</label>
+                          <input type="text" class="form-control" id="InputName" aria-describedby="fieldName" placeholder="Enter field name" name="name" required>
+                          <div class="invalid-feedback">
+                                You should enter a field name.
+                              </div>
+                        </div>
+                        <div class="form-group">
+                                <label for="FormControlType">Type</label>
+                                <select class="form-control" id="FormControlSelectType" name="type">
+                                  <option>Text</option>
+                                  <option>Number</option>
+                                </select>
+                              </div>
+                              <div class="form-group">
+                                    <label for="FormControlRequired">Required Field?</label>
+                                    <select class="form-control" id="FormControlSelectRequired" name="required">
+                                      <option>Yes</option>
+                                      <option>No</option>
+                                    </select>
+                                  </div>
+                                  <div class="form-group">
+                                        <div class="col-md-4">
+                                          <button id="add-more" name="add-more" class="btn btn-primary">Add More Field</button>
+                                        </div>
+                                      </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+                      </form>
+                    </div>          
+                </div>
+            
+    
+
+
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+<!--Load Bootstrap JavaScript-->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
