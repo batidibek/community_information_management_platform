@@ -45,11 +45,10 @@ class Field(models.Model):
         return self.name       
 
 class DataTypeObject(models.Model):
-    title = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published')
     community = models.ForeignKey(Community, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)
-    #fields = JSONField()
+    fields = JSONField()
     def __str__(self):
             return self.title
 

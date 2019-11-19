@@ -10,6 +10,7 @@ from django.urls import reverse
 import datetime
 import json
 import uuid
+from django.core import serializers
 
 
 # Create your views here.
@@ -26,12 +27,15 @@ def index(request):
 
 def cummunity_detail(request, community_name):
     community = get_object_or_404(Community, name=community_name)
-    post_list = Post.objects.filter(community=community)
+    #post_list = Post.objects.filter(community=community)
+    post_list = serializers.serialize( "python", Post.objects.filter(community=community))
     context = {
         'community': community,
         'post_list': post_list
     }
     return render(request, 'vircom/community_detail.html', context)
+
+ #POST   
 
 def new_post(request, community_name):        
     community = get_object_or_404(Community, name=community_name)
@@ -83,6 +87,8 @@ def change_post(request, community_id, post_id):
         post.save()
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
+#DATA TYPE        
+
 def new_data_type(request, community_name, fields = '{"fields":[]}'):        
     community = get_object_or_404(Community, name=community_name)
     if fields == '{"fields":[]}':
@@ -133,15 +139,6 @@ def create_data_type(request, community_id, fields):
             f = Field(name=field["name"],field_type=field["field_type"],required=field["required"], community=community,data_type=data_type)
             f.save()
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))           
-
-# def new_field(request, community_name, data_type_id):
-#     community = get_object_or_404(Community, name=community_name)
-#     data_type = get_object_or_404(DataType, id=data_type_id)
-#     context = {
-#         'community': community,
-#         'data_type': data_type,
-#     }
-#     return render(request, 'vircom/new_field.html', context)
     
 
 def add_field(request, community_id, fields):
@@ -164,3 +161,56 @@ def add_field(request, community_id, fields):
         }) 
         fields = json.dumps(f)
     return HttpResponseRedirect(reverse('vircom:new_data_type', args=(community.name,fields)))
+
+# DATA TYPE OBJECT    
+
+def new_data_type_object(request, community_name, fields = '{"fields":[]}'):        
+    community = get_object_or_404(Community, name=community_name)
+    if fields == '{"fields":[]}':
+        context = {
+        'community': community,
+        'fields': fields,
+        'field_list': '',
+    }
+    else:
+        field_list = json.loads(fields)
+        context = {
+            'community': community,
+            'fields': fields,
+            'field_list': field_list,
+        }
+    return render(request, 'vircom/new_data_type.html', context) 
+
+def create_data_type_object(request, community_id, fields):
+    community = get_object_or_404(Community, pk=community_id)
+    #data_type = get_object_or_404(DataType, pk=data_type_id)
+    name = request.POST['name']
+    data_type = DataType(name=name, community=community)
+    data_type_list = DataType.objects.filter(name=name, community=community)
+    for dt in data_type_list:
+        if dt.name == name:
+            return render(request, 'vircom/new_data_type.html', {
+            'community': community,
+            'fields': fields,
+            'error_message': "There is a data type called " + name + "in this community.",
+        })
+    if data_type.name == "":
+        return render(request, 'vircom/new_data_type.html', {
+            'community': community,
+            'fields': fields,
+            'error_message': "Title field cannot be empty.",
+        })  
+    if fields == '{"fields":[]}':
+        return render(request, 'vircom/new_data_type.html', {
+            'community': community,
+            'fields': fields,
+            'error_message': "You need to add at least one custom field.",
+        })
+    else:
+        data_type.save()
+        fields_dict = {}
+        fields_dict = json.loads(fields)
+        for field in fields_dict['fields']:
+            f = Field(name=field["name"],field_type=field["field_type"],required=field["required"], community=community,data_type=data_type)
+            f.save()
+        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))               

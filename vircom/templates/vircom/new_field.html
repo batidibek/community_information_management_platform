@@ -1,8 +1,0 @@
-<h1>Add a new custom field</h1>
-{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-<form action="{% url 'vircom:add_field' community.id data_type.id%}" method="post">
-    {% csrf_token %}
-    <p>Name: <input type="text" name="name"></p>
-    <p>Type: <input type="text" name="type"></p>
-    <p><input type="submit" value="Add Field"></p>
-</form>

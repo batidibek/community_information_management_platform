@@ -61,9 +61,9 @@
 
     {% if field_list%}
     <ul>
-        {% for field in field_list %}
+        {% for field in field_list.fields %}
         <li>
-            <div>{{ field.name}} - {{ field.type}} - {{ field.required}}</div>
+            <div>{{ field.name}} - {{ field.field_type}} - {{ field.required}}</div>
                 {% endfor %}
     </ul>
     {% else %}

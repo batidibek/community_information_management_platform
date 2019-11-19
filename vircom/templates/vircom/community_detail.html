@@ -2,15 +2,22 @@
 <h1>{{ community.name }}</h1>
 
 {% if post_list%}
-    <ul>
-    {% for Post in post_list %}
-        <li><div>{{ Post.title}}</div><div>{{ Post.body}}</div><div>{{ Post.pub_date}}
-        </div><form action="{% url 'vircom:delete_post' community.id Post.id %}"><button type='submit'>Delete</button></form>
-        </div><form action="{% url 'vircom:edit_post' community.name Post.id %}"><button type='submit'>Edit</button></form><br/><br/></li>
+<ul>
+    {% for post in post_list %}
+    <li>
+        {% for field, value in post.fields.items %}
+
+        {% if field != "community" %}{{ value }}<br />{% endif %}
+
+        {% endfor %}
+        <form action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button></form>
+        <form action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button></form>
+        <br /><br />
+    </li>
     {% endfor %}
-    </ul>
+</ul>
 {% else %}
-    <p>There is no post in this community.</p>
+<p>There is no post in this community.</p>
 {% endif %}
 
 <div><a href="{% url 'vircom:new_post' community.name %}">Create New Post</a></div>
