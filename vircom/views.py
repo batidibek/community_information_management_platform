@@ -15,7 +15,7 @@ from django.core import serializers
 
 # Create your views here.
 
-
+# HOMEPAGE
 
 def index(request):
     community_list = Community.objects.order_by('-pub_date')[:30]
@@ -24,6 +24,8 @@ def index(request):
         'community_list': community_list,
     }
     return render(request, 'vircom/index.html', context)
+
+# COMMUNITY DETAILS    
 
 def cummunity_detail(request, community_name):
     community = get_object_or_404(Community, name=community_name)
