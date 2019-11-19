@@ -38,6 +38,7 @@ class DataType(models.Model):
 class Field(models.Model): 
     name = models.CharField(max_length=200)   
     Type = models.CharField(max_length=200)
+    community = models.ForeignKey(Community, on_delete=models.PROTECT)
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)   
     def __str__(self):
         return self.name       

@@ -85,16 +85,26 @@ def change_post(request, community_id, post_id):
 
 def new_data_type(request, community_name):        
     community = get_object_or_404(Community, name=community_name)
+    data_type = DataType(name="", community=community)
+    data_type.save()
     context = {
         'community': community,
-
+        'data_type': data_type,
     }
     return render(request, 'vircom/new_data_type.html', context) 
 
-def create_data_type(request, community_id):
+def create_data_type(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
+    community = get_object_or_404(DataType, pk=data_type_id)
     name = request.POST['name']
-    data_type = DataType(name=name, community=community, fields = '{"fields":[]}')
+    data_type_list = DataType.objects.filter(name=name, community=community)
+    for dt in data_type_list:
+        if dt.name = name:
+            return render(request, 'vircom/new_data_type.html', {
+            'community': community,
+            'data_type': data_type,
+            'error_message': "There is a data type called " + name + "in this community.",
+        })
     if data_type.name == "":
         return render(request, 'vircom/new_data_type.html', {
             'community': community,
@@ -121,7 +131,7 @@ def create_data_type(request, community_id):
 #     return render(request, 'vircom/new_field.html', context)
     
 
-def add_field(request, community_id):
+def add_field(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
     data_type = DataType.objects.get(pk=data_type_id)
     name = request.POST['name']
