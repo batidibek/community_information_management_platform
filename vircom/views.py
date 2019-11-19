@@ -29,11 +29,13 @@ def index(request):
 
 def cummunity_detail(request, community_name):
     community = get_object_or_404(Community, name=community_name)
+    data_type_list = DataType.objects.filter(community=community)
     #post_list = Post.objects.filter(community=community)
     post_list = serializers.serialize( "python", Post.objects.filter(community=community))
     context = {
         'community': community,
-        'post_list': post_list
+        'post_list': post_list,
+        'data_type_list': data_type_list,
     }
     return render(request, 'vircom/community_detail.html', context)
 
@@ -172,12 +174,33 @@ def new_data_type_object(request, community_name, data_type_name):
     context = {
         'community': community,
         'data_type': data_type,
-        'fields': 'fields'
+        'fields': fields
     }
     return render(request, 'vircom/new_data_type_object.html', context) 
 
 def create_data_type_object(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
     data_type = get_object_or_404(DataType, pk=data_type_id)
-    #TO DO not completed
-    return HttpResponseRedirect(reverse('vircom:new_data_type_object', args=(community.name,data_type.name)))               
+    fields = Field.objects.filter(data_type=data_type,community=community)
+    f = {}
+    f['fields'] = []
+    for field in fields:
+        field_id = str(field.pk)
+        if request.POST[field_id] == "" or None and field.required == Yes:
+            return render(request, 'vircom/new_data_type_object.html', {
+            'community': community,
+            'data_type': data_type,
+            'error_message_fields': "You cannot leave required fields empty.",
+        }) 
+        f['fields'].append(
+            {
+                "name": field.name,
+                "field_type": field.field_type,
+                "required": field.required,
+                "value": request.POST[field_id]
+            }
+        )
+    fields_json = json.dumps(f)
+    data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=fields_json)
+    data_type_object.save()
+    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name)))               

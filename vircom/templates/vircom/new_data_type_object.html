@@ -13,19 +13,32 @@
 
 <body>
 
-    <h1> Create a new {{ data_type.name }} post for {{ community.name }}</h1>
+    <h1> Create a new {{ data_type.name }} for {{ community.name }}</h1>
     {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
     <form action="{% url 'vircom:create_data_type_object' community.id data_type.id%}" method="post" novalidate>
         {% csrf_token %}
+        {% for field in fields %}
         <div class="form-group">
-            <label for="InputDataTypeName">Data Type Name</label>
-            <input type="text" class="form-control" id="InputDataTypeName" aria-describedby="dataTypeName"
-                placeholder="Enter data type name" name="name" required>
-            <div class="invalid-feedback">
-                You should enter a data type name.
-            </div>
+            <label for="{{field.name}}">{{field.name}}</label>
+            <small id="fieldType" class="form-text text-muted">{{field.field_type}}</small>
+            {% if field.field_type == "Text"%}
+            <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+            {% endif %}
+            {% if field.field_type == "Integer"%}
+            <input type="number" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+            {% endif %}
+            {% if field.field_type == "Decimal Number"%}
+            <input type="number" step=0.01 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+            {% endif %}
+            {% if field.required == "Yes" %}
+            <small id="fieldType" class="form-text text-muted">Required field</small>
+            {% endif %}
         </div>
+        {% endfor %}
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 

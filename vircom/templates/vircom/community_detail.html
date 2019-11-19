@@ -21,4 +21,10 @@
 {% endif %}
 
 <div><a href="{% url 'vircom:new_post' community.name %}">Create New Post</a></div>
+{% if data_type_list %}
+    {% for data_type in data_type_list %}
+    <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.name %}">Create New {{data_type.name }}</a></div>
+    {% endfor %}
+{% endif %}
+<br /><br />
 <div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>
