@@ -14,7 +14,7 @@
 <body>
 
     <h1> Create a new {{ data_type.name }} for {{ community.name }}</h1>
-    
+
 
     <form action="{% url 'vircom:create_data_type_object' community.id data_type.id%}" method="post" novalidate>
         {% csrf_token %}
@@ -27,6 +27,10 @@
             {% endif %}
             {% if field.field_type == "Text"%}
             <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+            {% endif %}
+            {% if field.field_type == "Long Text"%}
+            <input type="textarea" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}" rows="5"
                 placeholder="Enter {{field.name}}" name="{{field.pk}}">
             {% endif %}
             {% if field.field_type == "Integer"%}

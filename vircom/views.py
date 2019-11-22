@@ -31,7 +31,35 @@ def new_community(request):
     return render(request, 'vircom/new_community.html')
 
 def create_community(request):
-    pass
+    name = request.POST['name']
+    description = request.POST['description']
+    tags = request.POST['tags']
+    tags_array  = tags.split(",")
+    tags_dict = {}
+    tags_dict['tags'] = []
+    for tag in tags_array:
+        tags_dict['tags'].append(
+            {
+            "tag": tag
+            }
+        )
+    #tags_json = json.dumps(tags_dict)
+    community = Community(name=name, description=description, pub_date=datetime.datetime.now(),tags=tags_dict)
+    if community.name == "" or community.description == "":
+        return render(request, 'vircom/new_community.html', {
+            'community': community,
+            'error_message': "Name and Description fields cannot be empty.",
+        })
+    else:
+        community.save()
+        post = DataType (name="post", community=community)
+        post.save()
+        title = Field(name="title",field_type="Text",required="Yes", community=community,data_type=post)
+        title.save()
+        body = Field(name="title",field_type="Long Text",required="Yes", community=community,data_type=post)
+        title.save()
+        return HttpResponseRedirect(reverse('vircom:index'))
+    
 
 # COMMUNITY DETAILS    
 
@@ -86,6 +114,7 @@ def create_post(request, community_id):
         })
     else:
         post.save()
+        post = DataType()
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
 def delete_post(request, community_id, post_id):  
@@ -227,8 +256,7 @@ def create_data_type_object(request, community_id, data_type_id):
                 "value": request.POST[field_id]
             }
         )
-    fields_json = json.dumps(f)
-    data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=fields_json)
+    data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=f)
     data_type_object.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
 

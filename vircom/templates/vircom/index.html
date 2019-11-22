@@ -1,12 +1,18 @@
 {% if community_list %}
-    <ul>
-    {% for Community in community_list %}
-        <li><a href="{% url 'vircom:community_detail' Community.name %}">{{ Community.name}}: {{Community.description }}</a></li>
+<ul>
+    {% for community in community_list %}
+    <li>
+        <div>
+            <a href="{% url 'vircom:community_detail' community.name %}">{{ community.name}}</a><br/>
+            {{community.description}}<br/>
+            {% for tag in community.tags.tags%}{{tag.tag}}  {% endfor %}<br/><br/><br/>
+        </div>
+    </li>
     {% endfor %}
-    </ul>
+</ul>
 {% else %}
-    <p>No communities are available.</p>
+<p>No communities are available.</p>
 {% endif %}
 
-<br/><br/><br/>
+<br /><br /><br />
 <a href="{% url 'vircom:new_community'%}">Create New Community</a>
