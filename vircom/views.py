@@ -25,9 +25,17 @@ def index(request):
     }
     return render(request, 'vircom/index.html', context)
 
+# NEW COMMUNITY    
+
+def new_community(request):    
+    return render(request, 'vircom/new_community.html')
+
+def create_community(request):
+    pass
+
 # COMMUNITY DETAILS    
 
-def cummunity_detail(request, community_name):
+def community_detail(request, community_name):
     community = get_object_or_404(Community, name=community_name)
     data_type_list = DataType.objects.filter(community=community)
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
@@ -222,4 +230,6 @@ def create_data_type_object(request, community_id, data_type_id):
     fields_json = json.dumps(f)
     data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=fields_json)
     data_type_object.save()
-    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))               
+    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
+
+

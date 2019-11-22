@@ -6,7 +6,7 @@ app_name = 'vircom'
 urlpatterns = [
     #VIEWS
     path('', views.index, name='index'),
-    path('<str:community_name>/', views.cummunity_detail, name='community_detail'),
+    path('<str:community_name>/feed', views.community_detail, name='community_detail'),
     path('<str:community_name>/new-post/', views.new_post, name='new_post'),
     path('<str:community_name>/<str:post_id>/edit-post/', views.edit_post, name='edit_post'),
     path('<str:community_name>/new-data-type', views.new_data_type, name='new_data_type'),

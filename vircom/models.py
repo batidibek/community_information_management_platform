@@ -10,6 +10,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 class Community(models.Model):
     name = models.CharField(max_length=200, unique=True)
     description = models.TextField(blank = True)
+    tags = JSONField()
     pub_date = models.DateTimeField('date published')
     #User who created, datatypes etc.
     def __str__(self):

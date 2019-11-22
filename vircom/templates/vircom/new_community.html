@@ -14,32 +14,39 @@
 <body>
 
 
-<h1>Create a new community</h1>
-{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+    <h1>Create a new community</h1>
+    {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
-<form action="{% url 'vircom:create_community'%}" method="post">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="CommunityName">Community Name</label>
-        <input type="text" class="form-control" id="ICommunityName" aria-describedby="CommunityName"
-            placeholder="Enter community name" name="name">
-    </div>
-    <div class="form-group">
-        <label for="CommunityDescription">Description</label>
-        <textarea class="form-control" id="CommunityDescription" rows="5"></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Create Community</button>
-</form>
+    <form action="{% url 'vircom:create_community'%}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="CommunityName">Community Name</label>
+            <input type="text" class="form-control" id="ICommunityName" aria-describedby="CommunityName"
+                placeholder="Enter community name" name="name">
+        </div>
+        <div class="form-group">
+            <label for="CommunityDescription">Description</label>
+            <textarea class="form-control" id="CommunityDescription" placeholder="Briefly describe your community"
+                rows="5" name="descriptin"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="CommunityDescription">Tags</label>
+            <input type="text" class="form-control" id="CommunityTags" aria-describedby="CommunityTags"
+                placeholder="Provide tags for your community" name="tags">
+            <small id="CommunityTagsHelper" class="form-text text-muted">You can seperate the tags using comma(,). e.g tag1,tag2,tag3...</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Community</button>
+    </form>
 
 
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-crossorigin="anonymous"></script>
-<!--Load Bootstrap JavaScript-->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
-integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-crossorigin="anonymous"></script>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <!--Load Bootstrap JavaScript-->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
