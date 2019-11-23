@@ -30,15 +30,14 @@
         <button type="submit" class="btn btn-primary">Create Data Type</button>
     </form>
     <br /><br /><br /><br /><br /><br />
+    {% if error_message_fields %}<p style="color: red"><strong>{{ error_message_fields }}</strong></p>{% endif %}
+
     <form action="{% url 'vircom:add_field' community.id fields%}" method="post" novalidate>
         {% csrf_token %}
         <div class="form-group">
             <label for="InputName">Field Name</label>
             <input type="text" class="form-control" id="InputName" aria-describedby="fieldName"
-                placeholder="Enter field name" name="name" required>
-            <div class="invalid-feedback">
-                You should enter a field name.
-            </div>
+                placeholder="Enter field name" name="name">
         </div>
         <div class="form-group">
             <label for="FormControlType">Type</label>
@@ -64,8 +63,11 @@
     <ul>
         {% for field in field_list.fields %}
         <li>
-            <div>{{ field.name}} - {{ field.field_type}} - {{ field.required}}</div>
-                {% endfor %}
+            <div>
+                {{ field.name}} - {{ field.field_type}} - {{ field.required}}<br/>
+                <form action="{% url 'vircom:remove_field' community.id fields field.name %}"><button type='submit'>Remove</button></form>
+            </div>
+            {% endfor %}
     </ul>
     {% else %}
     <p>No custom field added yet.</p>

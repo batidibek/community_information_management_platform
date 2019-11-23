@@ -19,6 +19,7 @@ urlpatterns = [
     path('<str:community_id>/<str:post_id>/change-post/', views.change_post, name='change_post'),
     path('<str:community_id>/create-data-type/<str:fields>', views.create_data_type, name='create_data_type'),
     path('<str:community_id>/add-field/<str:fields>', views.add_field, name='add_field'),
+    path('<str:community_id>/remove-field/<str:fields>/<str:field_name>', views.remove_field, name='remove_field'),
     path('<str:community_id>/<str:data_type_id>/create-data-type-object', views.create_data_type_object, name='create_data_type_object'),
     path('create-community/', views.create_community, name='create_community'),
     path('<str:community_id>/<str:data_type_id>/change-data-type', views.change_data_type, name='change_data_type'),
