@@ -15,12 +15,7 @@
 
     <h1>Edit your post</h1>
     {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-    <!-- <form action="{% url 'vircom:change_post' community.id post.id %}" method="post">
-    {% csrf_token %}
-    <p>Title: <input id="title" type="text" name="title" value="{{post.title}}"></p>
-    <p>Body: <input id="body" type="text" name="body" style="width: 400px" value="{{post.body}}"></p>
-    <p><input type="submit" value="Edit Post"></p>
-</form> -->
+
 
     <form action="{% url 'vircom:change_post' community.id post.id %}" method="post" novalidate>
         {% csrf_token %}
@@ -28,9 +23,6 @@
         <div class="form-group">
             <label for="{{field.name}}">{{field.name}}</label>
             <small id="fieldType" class="form-text text-muted">{{field.field_type}}</small>
-            {% if field.required == "Yes"%}
-            {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-            {% endif %}
             {% if field.field_type == "Text"%}
             <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 value="{{field.value}}" name="{{field.name}}">

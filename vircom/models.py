@@ -14,20 +14,7 @@ class Community(models.Model):
     pub_date = models.DateTimeField('date published')
     #User who created, datatypes etc.
     def __str__(self):
-        return self.name
-
-class Post(models.Model):
-    title = models.CharField(max_length=200)
-    body = models.TextField(blank = True)
-    pub_date = models.DateTimeField('date published')
-    community = models.ForeignKey(Community, on_delete=models.PROTECT)
-    #user who created, tags
-
-    def __str__(self):
-            return self.title
-
-    def was_published_recently(self):
-            return self.pub_date >= timezone.now() - datetime.timedelta(days=1)            
+        return self.name       
 
 class DataType(models.Model):   
     name = models.CharField(max_length=200)
@@ -35,15 +22,6 @@ class DataType(models.Model):
     fields = JSONField()
     def __str__(self):
         return self.name   
-
-class Field(models.Model): 
-    name = models.CharField(max_length=200)   
-    field_type = models.CharField(max_length=200)
-    required = models.CharField(max_length=200)
-    community = models.ForeignKey(Community, on_delete=models.PROTECT)
-    data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)   
-    def __str__(self):
-        return self.name       
 
 class DataTypeObject(models.Model):
     data_type = models.ForeignKey(DataType, on_delete=models.PROTECT)

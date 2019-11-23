@@ -1,21 +1,6 @@
 <a href="{% url 'vircom:index' %}">Homepage</a>
 <h1>{{ community.name }}</h1>
 
-{% if post_list%}
-<ul>
-    {% for post in post_list %}
-    <li>
-        <div>{{ post.title }}<br />{{ post.body }}<br />{{ post.pub_date }}</div>
-        <form action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button></form>
-        <form action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button></form>
-        <br /><br />
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>There is no post in this community.</p>
-{% endif %}
-
 {% if data_type_object_list%}
 <ul>
     {% for post in data_type_object_list %}
@@ -34,7 +19,7 @@
 {% endif %}
 
 
-<div><a href="{% url 'vircom:new_post' community.name %}">Create New Post</a></div>
+
 {% if data_type_list %}
 {% for data_type in data_type_list %}
 <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.name %}">Create New {{data_type.name }}</a>
