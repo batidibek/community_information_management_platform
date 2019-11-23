@@ -168,7 +168,7 @@ def remove_field(request, community_id, fields, field_name):
         if field['name'] == field_name:
             del f['fields'][counter]
             break
-        counter += counter
+        counter = counter + 1
     fields = json.dumps(f)        
     return HttpResponseRedirect(reverse('vircom:new_data_type', args=(community.name,fields)))
 
@@ -179,6 +179,7 @@ def delete_data_type(request, community_id, data_type_id):
     data_type.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
+#not finished
 def edit_data_type(request, community_name, data_type_id):  
     community = get_object_or_404(Community, name=community_name)
     post = DataTypeObject.objects.get(pk=post_id)
@@ -194,7 +195,6 @@ def edit_data_type(request, community_name, data_type_id):
             "name": field_dt['name'],
             "field_type": field_dt['field_type'],
             "required": field_dt['required'],
-            "value": "",
         })
     post.save()    
     context = {
@@ -203,6 +203,7 @@ def edit_data_type(request, community_name, data_type_id):
     }
     return render(request, 'vircom/edit_post.html', context)
 
+#not finished
 def change_data_type(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
     post = DataTypeObject.objects.get(pk=post_id)
@@ -250,21 +251,31 @@ def create_data_type_object(request, community_id, data_type_id):
     f = {}
     f['fields'] = []
     for field in fields['fields']:
-        if request.POST[field['name']] == "" or None and field.required == "Yes":
+        if request.POST[field['name']] == "" and field['required'] == "Yes":
             return render(request, 'vircom/new_data_type_object.html', {
             'community': community,
             'data_type': data_type,
             'fields': fields,
             'error_message': "You cannot leave required fields empty.",
         }) 
-        f['fields'].append(
-            {
-                "name": field['name'],
-                "field_type": field['field_type'],
-                "required": field['required'],
-                "value": request.POST[field['name']]
-            }
-        )
+        elif request.POST[field['name']] == "" and field['required'] == "No":
+            f['fields'].append(
+                {
+                    "name": field['name'],
+                    "field_type": field['field_type'],
+                    "required": field['required'],
+                    "value": "-"
+                }
+            )
+        else:    
+            f['fields'].append(
+                {
+                    "name": field['name'],
+                    "field_type": field['field_type'],
+                    "required": field['required'],
+                    "value": request.POST[field['name']]
+                }
+            )
     data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=f)
     data_type_object.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
