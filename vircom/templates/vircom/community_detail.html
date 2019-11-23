@@ -1,5 +1,6 @@
 <a href="{% url 'vircom:index' %}">Homepage</a>
 <h1>{{ community.name }}</h1>
+{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
 {% if data_type_object_list%}
 <ul>
@@ -22,8 +23,12 @@
 
 {% if data_type_list %}
 {% for data_type in data_type_list %}
+{% if not data_type.is_archived %}
 <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.name %}">Create New {{data_type.name }}</a>
+    <form action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button type='submit'>Delete</button></form>
+    <form action="{% url 'vircom:edit_data_type' community.name data_type.pk %}"><button type='submit'>Edit</button></form>
 </div>
+{% endif %}
 {% endfor %}
 {% endif %}
 <br /><br />

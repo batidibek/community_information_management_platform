@@ -20,6 +20,7 @@ class DataType(models.Model):
     name = models.CharField(max_length=200)
     community = models.ForeignKey(Community, on_delete=models.PROTECT)
     fields = JSONField()
+    is_archived = models.BooleanField(default=False)
     def __str__(self):
         return self.name   
 

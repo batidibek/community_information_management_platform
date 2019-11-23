@@ -146,10 +146,11 @@ def add_field(request, community_id, fields):
         fields = json.dumps(f)
     return HttpResponseRedirect(reverse('vircom:new_data_type', args=(community.name,fields)))
 
-def delete_data_type(request, community_id, data_type_id):  
-    community = get_object_or_404(Community, pk=community_id)      
-    post = DataTypeObject.objects.get(pk=post_id)
-    post.delete()
+def delete_data_type(request, community_id, data_type_id):    
+    community = get_object_or_404(Community, pk=community_id)
+    data_type = DataType.objects.get(pk=data_type_id)
+    data_type.is_archived = True
+    data_type.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
 def edit_data_type(request, community_name, data_type_id):  
@@ -206,6 +207,8 @@ def change_data_type(request, community_id, data_type_id):
 def new_data_type_object(request, community_name, data_type_name):        
     community = get_object_or_404(Community, name=community_name)
     data_type = get_object_or_404(DataType, name=data_type_name, community=community)
+    if data_type.is_archived:
+            return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     fields = data_type.fields
     context = {
         'community': community,
@@ -240,8 +243,8 @@ def create_data_type_object(request, community_id, data_type_id):
     data_type_object.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
 
-def delete_post(request, community_id, post_id):  
-    community = get_object_or_404(Community, pk=community_id)      
+def delete_post(request, community_id, post_id):   
+    community = get_object_or_404(Community, pk=community_id)  
     post = DataTypeObject.objects.get(pk=post_id)
     post.delete()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
