@@ -1,15 +1,69 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+    <!--    Load Bootstrap via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+
 <body>
 
-<h1>Edit your post</h1>
-{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-<form action="{% url 'vircom:change_post' community.id post.id %}" method="post">
+    <h1>Edit your post</h1>
+    {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+    <!-- <form action="{% url 'vircom:change_post' community.id post.id %}" method="post">
     {% csrf_token %}
     <p>Title: <input id="title" type="text" name="title" value="{{post.title}}"></p>
     <p>Body: <input id="body" type="text" name="body" style="width: 400px" value="{{post.body}}"></p>
     <p><input type="submit" value="Edit Post"></p>
-</form>
+</form> -->
+
+    <form action="{% url 'vircom:change_post' community.id post.id %}" method="post" novalidate>
+        {% csrf_token %}
+        {% for field in post.fields.fields %}
+        <div class="form-group">
+            <label for="{{field.name}}">{{field.name}}</label>
+            <small id="fieldType" class="form-text text-muted">{{field.field_type}}</small>
+            {% if field.required == "Yes"%}
+            {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+            {% endif %}
+            {% if field.field_type == "Text"%}
+            <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                value="{{field.value}}" name="{{field.name}}">
+            {% endif %}
+            {% if field.field_type == "Long Text"%}
+            <textarea class="form-control" id="{{field.name}}"  rows="5"
+                name="{{field.name}}">{{field.value}}</textarea>
+            {% endif %}
+            {% if field.field_type == "Integer"%}
+            <input type="number" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                value="{{field.value}}" name="{{field.name}}">
+            {% endif %}
+            {% if field.field_type == "Decimal Number"%}
+            <input type="number" step=0.01 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                value="{{field.value}}" name="{{field.name}}">
+            {% endif %}
+            {% if field.required == "Yes" %}
+            <small id="fieldType" class="form-text text-muted">Required field</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <!--Load Bootstrap JavaScript-->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
 
 </body>
+
 </html>

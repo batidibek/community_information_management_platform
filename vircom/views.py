@@ -121,7 +121,7 @@ def new_data_type(request, community_name, fields = '{"fields":[]}'):
 def create_data_type(request, community_id, fields):
     community = get_object_or_404(Community, pk=community_id)
     name = request.POST['name']
-    data_type = DataType(name=name, community=community)
+    data_type = DataType(name=name, community=community, fields={})
     data_type_list = DataType.objects.filter(community=community)
     for dt in data_type_list:
         if dt.name == name:
@@ -143,12 +143,10 @@ def create_data_type(request, community_id, fields):
             'error_message': "You need to add at least one custom field.",
         })
     else:
-        data_type.save()
         fields_dict = {}
         fields_dict = json.loads(fields)
-        for field in fields_dict['fields']:
-            f = Field(name=field["name"],field_type=field["field_type"],required=field["required"], community=community,data_type=data_type)
-            f.save()
+        data_type.fields = fields_dict
+        data_type.save()
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))           
     
 
@@ -178,7 +176,7 @@ def add_field(request, community_id, fields):
 def new_data_type_object(request, community_name, data_type_name):        
     community = get_object_or_404(Community, name=community_name)
     data_type = get_object_or_404(DataType, name=data_type_name, community=community)
-    fields = Field.objects.filter(data_type=data_type,community=community)
+    fields = data_type.fields
     context = {
         'community': community,
         'data_type': data_type,
@@ -189,12 +187,11 @@ def new_data_type_object(request, community_name, data_type_name):
 def create_data_type_object(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
     data_type = get_object_or_404(DataType, pk=data_type_id)
-    fields = Field.objects.filter(data_type=data_type,community=community)
+    fields = data_type.fields
     f = {}
     f['fields'] = []
-    for field in fields:
-        field_id = str(field.pk)
-        if request.POST[field_id] == "" or None and field.required == "Yes":
+    for field in fields['fields']:
+        if request.POST[field['name']] == "" or None and field.required == "Yes":
             return render(request, 'vircom/new_data_type_object.html', {
             'community': community,
             'data_type': data_type,
@@ -203,10 +200,10 @@ def create_data_type_object(request, community_id, data_type_id):
         }) 
         f['fields'].append(
             {
-                "name": field.name,
-                "field_type": field.field_type,
-                "required": field.required,
-                "value": request.POST[field_id]
+                "name": field['name'],
+                "field_type": field['field_type'],
+                "required": field['required'],
+                "value": request.POST[field['name']]
             }
         )
     data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=f)
@@ -231,25 +228,24 @@ def edit_post(request, community_name, post_id):
 def change_post(request, community_id, post_id):
     community = get_object_or_404(Community, pk=community_id)
     post = DataTypeObject.objects.get(pk=post_id)
+    #fields = post.fields
     f = {}
     f['fields'] = []
-    for field in fields:
-        field_id = str(field.pk)
-        if request.POST[field_id] == "" or None and field.required == "Yes":
-            return render(request, 'vircom/new_data_type_object.html', {
+    for field in post.fields['fields']:
+        if request.POST[field['name']] == "" or None and field.required == "Yes":
+            return render(request, 'vircom/edit_post.html', {
             'community': community,
-            'data_type': data_type,
-            'fields': fields,
-            'error_message': "You cannot leave required fields empty.",
+            'post': post
         }) 
         f['fields'].append(
             {
-                "name": field.name,
-                "field_type": field.field_type,
-                "required": field.required,
-                "value": request.POST[field_id]
+                "name": field['name'],
+                "field_type": field['field_type'],
+                "required": field['required'],
+                "value": request.POST[field['name']]
             }
         )
+    post.fields = f
     post.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
 

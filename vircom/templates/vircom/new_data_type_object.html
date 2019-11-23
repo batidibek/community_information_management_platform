@@ -18,7 +18,7 @@
 
     <form action="{% url 'vircom:create_data_type_object' community.id data_type.id%}" method="post" novalidate>
         {% csrf_token %}
-        {% for field in fields %}
+        {% for field in fields.fields %}
         <div class="form-group">
             <label for="{{field.name}}">{{field.name}}</label>
             <small id="fieldType" class="form-text text-muted">{{field.field_type}}</small>
@@ -27,19 +27,19 @@
             {% endif %}
             {% if field.field_type == "Text"%}
             <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
-                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+                placeholder="Enter {{field.name}}" name="{{field.name}}">
             {% endif %}
             {% if field.field_type == "Long Text"%}
             <textarea class="form-control" id="{{field.name}}" placeholder="Enter {{field.name}}"
-                rows="5" name="{{field.pk}}"></textarea>
+                rows="5" name="{{field.name}}"></textarea>
             {% endif %}
             {% if field.field_type == "Integer"%}
             <input type="number" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
-                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+                placeholder="Enter {{field.name}}" name="{{field.name}}">
             {% endif %}
             {% if field.field_type == "Decimal Number"%}
             <input type="number" step=0.01 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
-                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+                placeholder="Enter {{field.name}}" name="{{field.name}}">
             {% endif %}
             {% if field.required == "Yes" %}
             <small id="fieldType" class="form-text text-muted">Required field</small>
