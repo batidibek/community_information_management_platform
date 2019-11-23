@@ -52,12 +52,12 @@ def create_community(request):
         })
     else:
         community.save()
-        post = DataType (name="post", community=community)
+        post = DataType (name="Default Post", community=community)
         post.save()
-        title = Field(name="title",field_type="Text",required="Yes", community=community,data_type=post)
+        title = Field(name="Title",field_type="Text",required="Yes", community=community,data_type=post)
         title.save()
-        body = Field(name="title",field_type="Long Text",required="Yes", community=community,data_type=post)
-        title.save()
+        body = Field(name="Body",field_type="Long Text",required="Yes", community=community,data_type=post)
+        body.save()
         return HttpResponseRedirect(reverse('vircom:index'))
     
 
@@ -68,28 +68,11 @@ def community_detail(request, community_name):
     data_type_list = DataType.objects.filter(community=community)
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     post_list = Post.objects.filter(community=community).order_by('-pub_date')
-    # posts = []
-    
-    # for post in post_list:
-    #     conter = 0
-    #     for data in data_type_object_list:
-    #         if post.items.pub_date > data.items.pub_date:
-    #             posts.append(post)
-    #             counter = 1
-    #             break
-    #         else:
-    #             posts.append(data)
-    #     if conter == 0:
-    #         posts.append(post)        
-
     context = {
         'community': community,
         'post_list': post_list,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
-        # 'post_list': post_list,
-        # 'data_type_list': data_type_list,
-        # 'data_type_object_list': data_type_object_list,
     }
     return render(request, 'vircom/community_detail.html', context)
 
@@ -109,36 +92,6 @@ def create_post(request, community_id):
     post = Post(title=title, body=body, pub_date=datetime.datetime.now(),community=community)
     if post.title == "" or post.body == "":
         return render(request, 'vircom/new_post.html', {
-            'community': community,
-            'error_message': "Title and Body fields cannot be empty.",
-        })
-    else:
-        post.save()
-        post = DataType()
-        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
-
-def delete_post(request, community_id, post_id):  
-    community = get_object_or_404(Community, pk=community_id)      
-    post = Post.objects.get(pk=post_id)
-    post.delete()
-    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
-
-def edit_post(request, community_name, post_id):  
-    community = get_object_or_404(Community, name=community_name)
-    post = Post.objects.get(pk=post_id)
-    context = {
-        'community': community,
-        'post': post,
-    }
-    return render(request, 'vircom/edit_post.html', context)
-
-def change_post(request, community_id, post_id):
-    community = get_object_or_404(Community, pk=community_id)
-    post = Post.objects.get(pk=post_id)
-    post.title = request.POST['title']
-    post.body = request.POST['body']
-    if post.title == "" or post.body == "":
-        return render(request, 'vircom/edit_post.html', {
             'community': community,
             'error_message': "Title and Body fields cannot be empty.",
         })
@@ -260,4 +213,43 @@ def create_data_type_object(request, community_id, data_type_id):
     data_type_object.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
 
+def delete_post(request, community_id, post_id):  
+    community = get_object_or_404(Community, pk=community_id)      
+    post = DataTypeObject.objects.get(pk=post_id)
+    post.delete()
+    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
+
+def edit_post(request, community_name, post_id):  
+    community = get_object_or_404(Community, name=community_name)
+    post = DataTypeObject.objects.get(pk=post_id)
+    context = {
+        'community': community,
+        'post': post,
+    }
+    return render(request, 'vircom/edit_post.html', context)
+
+def change_post(request, community_id, post_id):
+    community = get_object_or_404(Community, pk=community_id)
+    post = DataTypeObject.objects.get(pk=post_id)
+    f = {}
+    f['fields'] = []
+    for field in fields:
+        field_id = str(field.pk)
+        if request.POST[field_id] == "" or None and field.required == "Yes":
+            return render(request, 'vircom/new_data_type_object.html', {
+            'community': community,
+            'data_type': data_type,
+            'fields': fields,
+            'error_message': "You cannot leave required fields empty.",
+        }) 
+        f['fields'].append(
+            {
+                "name": field.name,
+                "field_type": field.field_type,
+                "required": field.required,
+                "value": request.POST[field_id]
+            }
+        )
+    post.save()
+    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
 

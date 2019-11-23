@@ -30,8 +30,8 @@
                 placeholder="Enter {{field.name}}" name="{{field.pk}}">
             {% endif %}
             {% if field.field_type == "Long Text"%}
-            <input type="textarea" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}" rows="5"
-                placeholder="Enter {{field.name}}" name="{{field.pk}}">
+            <textarea class="form-control" id="{{field.name}}" placeholder="Enter {{field.name}}"
+                rows="5" name="{{field.pk}}"></textarea>
             {% endif %}
             {% if field.field_type == "Integer"%}
             <input type="number" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
