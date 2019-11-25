@@ -193,6 +193,8 @@ def edit_data_type(request, community_name, data_type_name):
 #not finished
 def change_data_type(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
+    if "cancel" in request.POST:
+        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     data_type = DataType.objects.get(pk=data_type_id, community=community)
     field_list = data_type.fields
     f = {}

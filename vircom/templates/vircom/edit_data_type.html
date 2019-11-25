@@ -29,8 +29,10 @@
             <input type="text" class="form-control" id="InputDataTypeName" aria-describedby="dataTypeName"
                 placeholder="Enter data type name" name="title" value="{{data_type.name}}">
         </div>
-        <button type="submit" class="btn btn-primary">Create Data Type</button>
-
+        <div class="input-group-btn">
+            <button type="submit" class="btn btn-primary">Edit Data Type</button>
+            <button class="btn btn-danger" type="submit" name="cancel" value="cancel" style="margin-left: 10px;">Cancel</button>
+        </div>
         <br /><br /><br /><br /><br /><br />
         <h5>Your Data Type must contain at least one custom field.</h5>
         {% if error_message_fields %}<p style="color: red"><strong>{{ error_message_fields }}</strong></p>{% endif %}
