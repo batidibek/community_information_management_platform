@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--    Load Bootstrap via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    {% load static %}
+    <script src="{% static 'vircom/js/edit_data_type.js' %}"></script>
+</head>
+
+<body style="width: 1000px">
+
+    <h1>Edit {{data_type.name}}</h1>
+    {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+
+
+
+    <form action="{% url 'vircom:change_data_type' community.id data_type.id%}" id="edit_data_type_form" method="post"
+        novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="InputDataTypeName">Data Type Name</label>
+            <input type="text" class="form-control" id="InputDataTypeName" aria-describedby="dataTypeName"
+                placeholder="Enter data type name" name="title" value="{{data_type.name}}">
+        </div>
+        <button type="submit" class="btn btn-primary">Create Data Type</button>
+
+        <br /><br /><br /><br /><br /><br />
+        <h5>Your Data Type must contain at least one custom field.</h5>
+        {% if error_message_fields %}<p style="color: red"><strong>{{ error_message_fields }}</strong></p>{% endif %}
+        <br />
+        {% for field in field_list.fields %}
+        <div class="form-group removeclass{{ forloop.counter }}">
+            <div class="row" style="width: 1000px">
+                <div class="col-sm-3 nopadding">
+                    <div class="form-group">
+                        <label for="InputName">Field Name</label>
+                        <input type="text" class="form-control" id="InputName" aria-describedby="fieldName"
+                            placeholder="Enter field name" name="name" value="{{field.name}}">
+                    </div>
+                </div>
+                <div class="col-sm-3 nopadding">
+                    <div class="form-group">
+                        <label for="FormControlType">Type</label>
+                        <select class="form-control" id="FormControlSelectType" name="type">
+                            <option>Text</option>
+                            <option>Long Text</option>
+                            <option>Integer</option>
+                            <option>Decimal Number</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-3 nopadding">
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="FormControlRequired">Required Field?</label>
+                            <select class="form-control" id="FormControlSelectRequired" name="required">
+                                <option>Yes</option>
+                                <option>No</option>
+                            </select>
+                        </div>
+                        <div class="input-group-btn" style="top: 13px;"><label for="FormControlRemoveField">
+                            </label><button class="btn btn-danger" type="button"
+                                onclick="remove_fields('{{ forloop.counter }}');">
+                                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div id="fields" style="width: 1000px"></div>
+    </form>
+
+    <div class="input-group-btn">
+        <button class="btn btn-primary" type="button" onclick="fields();">Add Field</button>
+    </div>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <!--Load Bootstrap JavaScript-->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <script>
+
+        $(document).ready(function () {
+            field = parseInt("{{field_list.fields|length}}")
+        });
+    </script>
+
+</body>

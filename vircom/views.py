@@ -11,6 +11,7 @@ import datetime
 import json
 import uuid
 from django.core import serializers
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -140,11 +141,10 @@ def add_field(request, community_id, fields):
             'community': community,
             'fields': fields,
             'field_list': field_list,
-            'error_message_fields': "Title field cannot be empty.",
+            'error_message_fields': "Field Name cannot be empty.",
         }) 
     else:     
-        f = json.loads(fields)
-        for field in f['fields']:
+        for field in field_list['fields']:
             if name == field['name']:
                 return render(request, 'vircom/new_data_type.html', {
                     'community': community,
@@ -152,12 +152,12 @@ def add_field(request, community_id, fields):
                     'field_list': field_list,
                     'error_message_fields': "You cannot use same field name twice.",
                 }) 
-        f['fields'].append({
+        field_list['fields'].append({
             "name": name,
             "field_type": field_type,
             "required": required,
         }) 
-        fields = json.dumps(f)
+        fields = json.dumps(field_list)
     return HttpResponseRedirect(reverse('vircom:new_data_type', args=(community.name,fields)))
 
 def remove_field(request, community_id, fields, field_name):  
@@ -179,54 +179,83 @@ def delete_data_type(request, community_id, data_type_id):
     data_type.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
-#not finished
-def edit_data_type(request, community_name, data_type_id):  
+def edit_data_type(request, community_name, data_type_name):  
     community = get_object_or_404(Community, name=community_name)
-    post = DataTypeObject.objects.get(pk=post_id)
-    data_type_name = post.data_type.name
-    data_type = get_object_or_404(DataType, name=data_type_name)
-    for field_dt in data_type.fields['fields']:
-        checker = False
-        for field_post in post.fields['fields']:
-            if field_post['name'] == field_dt['name']:
-                checker = True
-        if checker == False:
-            post.fields['fields'].append({
-            "name": field_dt['name'],
-            "field_type": field_dt['field_type'],
-            "required": field_dt['required'],
-        })
-    post.save()    
+    data_type = DataType.objects.get(name=data_type_name, community=community)
+    field_list = data_type.fields
     context = {
         'community': community,
-        'post': post,
+        'data_type': data_type,
+        'field_list': field_list,
     }
-    return render(request, 'vircom/edit_post.html', context)
+    return render(request, 'vircom/edit_data_type.html', context)
 
 #not finished
 def change_data_type(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
-    post = DataTypeObject.objects.get(pk=post_id)
-    #fields = post.fields
+    data_type = DataType.objects.get(pk=data_type_id, community=community)
+    field_list = data_type.fields
     f = {}
     f['fields'] = []
-    for field in post.fields['fields']:
-        if request.POST[field['name']] == "" or None and field.required == "Yes":
-            return render(request, 'vircom/edit_post.html', {
+    name = request.POST['title']
+    print(dict(request.POST.lists()))
+    response = dict(request.POST.lists())
+    data_type_list = DataType.objects.filter(community=community)
+    if request.POST.get('name') == None:
+        return render(request, 'vircom/edit_data_type.html', {
             'community': community,
-            'post': post,
-            'error_message': "You cannot leave required fields empty.",
+            'data_type': data_type,
+            'field_list': field_list,
+            'error_message_fields': "You need to add at least one field.",
+        })
+    for dt in data_type_list:
+        if dt.name == name and dt.name != data_type.name:
+            return render(request, 'vircom/edit_data_type.html', {
+            'community': community,
+            'data_type': data_type,
+            'field_list': field_list,
+            'error_message': "There is a data type called " + name + " in this community.",
+        })
+    if data_type.name == "":
+        return render(request, 'vircom/edit_data_type.html', {
+            'community': community,
+            'data_type': data_type,
+            'field_list': field_list,
+            'error_message': "Title field cannot be empty.",
         }) 
+    else:
+        data_type.name = name
+    for key in range(len(response['name'])):
+        print(key)
+        print(response['name'][key])
+        if response['name'][key] == "":
+            return render(request, 'vircom/edit_data_type.html', {
+                'community': community,
+                'data_type': data_type,
+                'field_list': field_list,
+                'error_message_fields': "Field Name cannot be empty.",
+            }) 
+        else:     
+            for field in f['fields']:
+                if response['name'][key] == field['name']:
+                    return render(request, 'vircom/edit_data_type.html', {
+                        'community': community,
+                        'data_type': data_type,
+                        'field_list': field_list,
+                        'error_message_fields': "You cannot use same field name twice.",
+                    })
+        field_name = response['name'][key]
+        field_type = response['type'][key]   
+        field_required = response['required'][key]              
         f['fields'].append(
             {
-                "name": field['name'],
-                "field_type": field['field_type'],
-                "required": field['required'],
-                "value": request.POST[field['name']]
+                "name": field_name,
+                "field_type": field_type,
+                "required": field_required
             }
         )
-    post.fields = f
-    post.save()
+    data_type.fields = f
+    data_type.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))       
 
 # DATA TYPE OBJECT    
