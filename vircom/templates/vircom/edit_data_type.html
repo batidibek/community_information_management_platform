@@ -31,7 +31,8 @@
         </div>
         <div class="input-group-btn">
             <button type="submit" class="btn btn-primary">Edit Data Type</button>
-            <button class="btn btn-danger" type="submit" name="cancel" value="cancel" style="margin-left: 10px;">Cancel</button>
+            <button class="btn btn-danger" type="submit" name="cancel" value="cancel"
+                style="margin-left: 10px;">Cancel</button>
         </div>
         <br /><br /><br /><br /><br /><br />
         <h5>Your Data Type must contain at least one custom field.</h5>
@@ -51,11 +52,22 @@
                     <div class="form-group">
                         <label for="FormControlType">Type</label>
                         <select class="form-control" id="FormControlSelectType" name="type">
-                            <option>Text</option>
-                            <option>Long Text</option>
-                            <option>Integer</option>
-                            <option>Decimal Number</option>
+                            {% for type in field_types %}
+                            {% if type == field.field_type %}
+                            <option selected>
+                                {{type}}
+                            </option>
+                            {% else %}
+                            <option>{{type}}</option>
+                            {% endif %}
+                            {% endfor %}
                         </select>
+                    </div>
+                </div>
+                <div class="col-sm-2 nopadding" style="margin-bottom: 0;">
+                    <div class="form-group form-check-inline" style="margin-top: 30px;">
+                        <input type="checkbox" class="form-check-input" id="enumeratedCheck" style="width: 20px; height: 20px;" name="enumerated" checked>
+                        <label class="form-check-label" for="enumeratedCheck" style="font-weight: normal; margin-bottom: 0;">Enumerated</label>
                     </div>
                 </div>
                 <div class="col-sm-3 nopadding">
@@ -63,8 +75,13 @@
                         <div class="form-group">
                             <label for="FormControlRequired">Required Field?</label>
                             <select class="form-control" id="FormControlSelectRequired" name="required">
-                                <option>Yes</option>
+                                {% if field.required == "Yes" %}
+                                <option selected>Yes</option>
                                 <option>No</option>
+                                {% else %}
+                                <option>Yes</option>
+                                <option selected>No</option>
+                                {% endif %}
                             </select>
                         </div>
                         <div class="input-group-btn" style="top: 13px;"><label for="FormControlRemoveField">
@@ -73,6 +90,11 @@
                                 <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div>
                     </div>
                 </div>
+            </div>
+            <div id="options" style="width: 1000px"></div>
+            <div id="fields" style="width: 250px; margin-left: 50px;">
+                <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}" placeholder="Enter an option "
+                value="{{field.value}}" name="{{field.name}}" >
             </div>
         </div>
         {% endfor %}
@@ -99,4 +121,5 @@
     </script>
 
 </body>
+
 </html>

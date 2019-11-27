@@ -11,7 +11,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
 
-<body>
+<body style="width: 1000px">
 
     <h1> Create a new {{ data_type.name }} for {{ community.name }}</h1>
 
@@ -40,6 +40,23 @@
             {% if field.field_type == "Decimal Number"%}
             <input type="number" step=0.01 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 placeholder="Enter {{field.name}}" name="{{field.name}}">
+            {% endif %}
+            {% if field.field_type == "Date"%}
+            <input type="date" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                placeholder="Enter {{field.name}}" name="{{field.name}}">
+            {% endif %}
+            {% if field.field_type == "Time"%}
+            <input type="time" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                placeholder="Enter {{field.name}}" name="{{field.name}}">
+            {% endif %}
+            {% if field.field_type == "Image"%}
+            <div class="input-group">
+                <div class="form-control">
+                    <input type="file" accept=".jpg,.gif,.png" class="custom-file-input" id="{{field.name}}"
+                        aria-describedby="{{field.name}}" name="{{field.name}}">
+                    <label class="custom-file-label" for="inputGroupFile01">Choose file. Only jpg, png, and gif files can be uploaded.</label>
+                </div>
+            </div>
             {% endif %}
             {% if field.required == "Yes" %}
             <small id="fieldType" class="form-text text-muted">Required field</small>

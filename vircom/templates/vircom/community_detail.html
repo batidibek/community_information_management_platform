@@ -6,8 +6,11 @@
 <ul>
     {% for post in data_type_object_list %}
     <li>
-        <div>{{ post.data_type }}<br />
-            {% for field in post.fields.fields %}<b>{{field.name}}:</b> {{field.value}}<br />{% endfor %}
+        <div>
+            {{ post.data_type }}<br />
+            {% for field in post.fields.fields %}
+            <b>{{field.name}}:</b> {% if field.field_type == "Image" and field.value != "" %}<img src="{{field.value}}" style="width: 100px;"/>{% else %}{{field.value}}{% endif %}<br />
+            {% endfor %}
         </div>
         <form action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button></form>
         <form action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button></form>

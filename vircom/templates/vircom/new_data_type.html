@@ -14,22 +14,21 @@
     <script src="{% static 'vircom/js/data_type.js' %}"></script>
 </head>
 
-<body>
+<body style="width: 1000px">
 
     <h1> Create a new data type for {{ community.name }}</h1>
     {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
 
-    <form action="{% url 'vircom:create_data_type' community.id %}" id="edit_data_type_form" method="post"
-        novalidate>
+    <form action="{% url 'vircom:create_data_type' community.id %}" id="edit_data_type_form" method="post" novalidate>
         {% csrf_token %}
         <div class="form-group">
             <label for="InputDataTypeName">Data Type Name</label>
             <input type="text" class="form-control" id="InputDataTypeName" aria-describedby="dataTypeName"
-                placeholder="Enter data type name" name="title" value="{{data_type.name}}">
+                placeholder="Enter data type name" name="title">
         </div>
         <div class="input-group-btn">
-            <button type="submit" class="btn btn-primary">Edit Data Type</button>
+            <button type="submit" class="btn btn-primary">Create Data Type</button>
             <button class="btn btn-danger" type="submit" name="cancel" value="cancel"
                 style="margin-left: 10px;">Cancel</button>
         </div>
@@ -44,10 +43,11 @@
         <button class="btn btn-primary" type="button" onclick="fields();">Add Field</button>
     </div>
 
+    <!-- TEST -->
 
+    
 
-
-
+    <!-- END TEST -->
 
 
     <!-- Include jQuery -->
