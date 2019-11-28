@@ -27,9 +27,9 @@
 {% if data_type_list %}
 {% for data_type in data_type_list %}
 {% if not data_type.is_archived %}
-<div><a href="{% url 'vircom:new_data_type_object' community.name data_type.name %}">Create New {{data_type.name }}</a>
+<div><a href="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">Create New {{data_type.name }}</a>
     <form action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button type='submit'>Delete</button></form>
-    <form action="{% url 'vircom:edit_data_type' community.name data_type.name %}"><button type='submit'>Edit</button></form>
+    <form action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button></form>
 </div>
 {% endif %}
 {% endfor %}

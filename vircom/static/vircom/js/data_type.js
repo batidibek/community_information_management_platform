@@ -54,7 +54,7 @@ function enumeration(field_id, choice){
         var objTo = document.getElementById('optionsField'+field_id);
         var divtest = document.createElement("div");
         divtest.setAttribute("class", "form-group option"+option);
-        divtest.innerHTML = '<div style="width: 250px; margin-left: 50px;"><div class="input-group"><div class="form-group"><input type="text" class="form-control" id="InputOption" aria-describedby="option" placeholder="Enter an option" name="option'+ field_id +'"></div><div class="input-group-btn"><label for="FormControlRemoveField"></label><button class="btn btn-success" type="button" onclick="addOption('+ field_id +');"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> </button></div></div></div>';
+        divtest.innerHTML = '<div style="width: 250px; margin-left: 50px;"><div class="input-group"><div class="form-check"><input class="form-check-input" type="checkbox" id="gridCheck" name="multiChoice'+ field_id +'"><label class="form-check-label" for="gridCheck" style="margin-left: 15px;">Multiple Choice?</label></div><div class="form-group"><input type="text" class="form-control" id="InputOption" aria-describedby="option" placeholder="Enter an option" name="option'+ field_id +'"></div><div class="input-group-btn"><label for="FormControlRemoveField"></label><button class="btn btn-success" type="button" onclick="addOption('+ field_id +');" style="margin-top: 20px;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> </button></div></div></div>';
         objTo.appendChild(divtest)
     }
     else{

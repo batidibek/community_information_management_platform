@@ -9,9 +9,9 @@ urlpatterns = [
     path('<str:community_name>/feed', views.community_detail, name='community_detail'),
     path('<str:community_name>/<str:post_id>/edit/', views.edit_post, name='edit_post'),
     path('<str:community_name>/new-data-type', views.new_data_type, name='new_data_type'),
-    path('<str:community_name>/new-<str:data_type_name>', views.new_data_type_object, name='new_data_type_object'),
+    path('<str:community_name>/new-<str:data_type_id>', views.new_data_type_object, name='new_data_type_object'),
     path('new-community/', views.new_community, name='new_community'),
-    path('<str:community_name>/<str:data_type_name>/edit', views.edit_data_type, name='edit_data_type'),
+    path('<str:community_name>/<str:data_type_id>/edit', views.edit_data_type, name='edit_data_type'),
     
     #REQUESTS
     path('<str:community_id>/<str:post_id>/delete-post/', views.delete_post, name='delete_post'),
