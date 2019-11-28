@@ -24,37 +24,47 @@
         {% for field in fields.fields %}
         <div class="form-group">
             <label for="{{field.name}}">{{field.name}}</label>
-            <small id="fieldType" class="form-text text-muted">{{field.field_type}}</small>
-            {% if field.field_type == "Text"%}
+            {% if field.enumerated == "Yes"%}
+            <select class="form-control" class="form-control" id="{{field.name}}" name="{{field.name}}">
+                {% if field.required == "No" %}
+                <option>[Leave Empty]</option>
+                {% endif %}
+                {% for option in field.options %}
+                <option>{{option}}</option>
+                {% endfor %}
+            </select>
+
+            {% elif field.field_type == "Text"%}
             <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 placeholder="Enter {{field.name}}" name="{{field.name}}">
-            {% endif %}
-            {% if field.field_type == "Long Text"%}
+
+            {% elif field.field_type == "Long Text"%}
             <textarea class="form-control" id="{{field.name}}" placeholder="Enter {{field.name}}" rows="5"
                 name="{{field.name}}"></textarea>
-            {% endif %}
-            {% if field.field_type == "Integer"%}
+
+            {% elif field.field_type == "Integer"%}
             <input type="number" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 placeholder="Enter {{field.name}}" name="{{field.name}}">
-            {% endif %}
-            {% if field.field_type == "Decimal Number"%}
+
+            {% elif field.field_type == "Decimal Number"%}
             <input type="number" step=0.01 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 placeholder="Enter {{field.name}}" name="{{field.name}}">
-            {% endif %}
-            {% if field.field_type == "Date"%}
+
+            {% elif field.field_type == "Date"%}
             <input type="date" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 placeholder="Enter {{field.name}}" name="{{field.name}}">
-            {% endif %}
-            {% if field.field_type == "Time"%}
+
+            {% elif field.field_type == "Time"%}
             <input type="time" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                 placeholder="Enter {{field.name}}" name="{{field.name}}">
-            {% endif %}
-            {% if field.field_type == "Image"%}
+
+            {% elif field.field_type == "Image"%}
             <div class="input-group">
                 <div class="form-control">
                     <input type="file" accept=".jpg,.gif,.png" class="custom-file-input" id="{{field.name}}"
                         aria-describedby="{{field.name}}" name="{{field.name}}">
-                    <label class="custom-file-label" for="inputGroupFile01">Choose file. Only jpg, png, and gif files can be uploaded.</label>
+                    <label class="custom-file-label" for="inputGroupFile01">Choose file. Only jpg, png, and gif files
+                        can be uploaded.</label>
                 </div>
             </div>
             {% endif %}

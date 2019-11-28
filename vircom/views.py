@@ -32,8 +32,8 @@ def new_community(request):
     return render(request, 'vircom/new_community.html')
 
 def create_community(request):
-    name = request.POST['name']
-    description = request.POST['description']
+    name = str(request.POST.get('name', "")).strip()
+    description = str(request.POST.get('description', "")).strip()
     tags = request.POST['tags']
     tags_array  = tags.split(",")
     tags_dict = {}
@@ -88,21 +88,14 @@ def create_data_type(request, community_id):
     community = get_object_or_404(Community, pk=community_id)
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
-    name = request.POST['name']    
+    name = str(request.POST.get('title', "")).strip()
+    print(name)
     data_type = DataType(name=name, community=community, fields={})
     field_list = data_type.fields
     f = {}
     f['fields'] = []
-    name = request.POST['title']
     response = dict(request.POST.lists())
-    data_type_list = DataType.objects.filter(community=community)
-    if request.POST.get('name') == None:
-        return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message_fields': "You need to add at least one field.",
-        })
+    data_type_list = DataType.objects.filter(community=community, is_archived=False)
     for dt in data_type_list:
         if dt.name == name and dt.name != data_type.name:
             return render(request, 'vircom/new_data_type.html', {
@@ -120,8 +113,15 @@ def create_data_type(request, community_id):
         }) 
     else:
         data_type.name = name
+    if request.POST.get('name') == None:
+        return render(request, 'vircom/new_data_type.html', {
+            'community': community,
+            'data_type': data_type,
+            'field_list': field_list,
+            'error_message_fields': "You need to add at least one field.",
+        })    
     for key in range(len(response['name'])):
-        if response['name'][key] == "":
+        if response['name'][key].strip() == "":
             return render(request, 'vircom/new_data_type.html', {
                 'community': community,
                 'data_type': data_type,
@@ -130,21 +130,28 @@ def create_data_type(request, community_id):
             }) 
         else:     
             for field in f['fields']:
-                if response['name'][key] == field['name']:
+                if response['name'][key].strip() == field['name']:
                     return render(request, 'vircom/new_data_type.html', {
                         'community': community,
                         'data_type': data_type,
                         'field_list': field_list,
                         'error_message_fields': "You cannot use same field name twice.",
                     })
-        field_name = response['name'][key]
+        field_id = response['fieldId'][key]
+        options = []
+        field_enumerated = response['enumerated'+field_id][0]
+        if field_enumerated == "Yes":
+            options = response['option'+field_id]       
+        field_name = response['name'][key].strip()
         field_type = response['type'][key]   
-        field_required = response['required'][key]              
+        field_required = response['required'][key]          
         f['fields'].append(
             {
                 "name": field_name,
                 "field_type": field_type,
-                "required": field_required
+                "required": field_required,
+                "enumerated": field_enumerated,
+                "options": options
             }
         )
     data_type.fields = f
@@ -182,16 +189,9 @@ def change_data_type(request, community_id, data_type_id):
     field_list = data_type.fields
     f = {}
     f['fields'] = []
-    name = request.POST['title']
+    name = str(request.POST.get('title', "")).strip()
     response = dict(request.POST.lists())
     data_type_list = DataType.objects.filter(community=community)
-    if request.POST.get('name') == None:
-        return render(request, 'vircom/edit_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message_fields': "You need to add at least one field.",
-        })
     for dt in data_type_list:
         if dt.name == name and dt.name != data_type.name:
             return render(request, 'vircom/edit_data_type.html', {
@@ -209,8 +209,15 @@ def change_data_type(request, community_id, data_type_id):
         }) 
     else:
         data_type.name = name
+    if request.POST.get('name') == None:
+        return render(request, 'vircom/edit_data_type.html', {
+            'community': community,
+            'data_type': data_type,
+            'field_list': field_list,
+            'error_message_fields': "You need to add at least one field.",
+        })    
     for key in range(len(response['name'])):
-        if response['name'][key] == "":
+        if response['name'][key].strip() == "":
             return render(request, 'vircom/edit_data_type.html', {
                 'community': community,
                 'data_type': data_type,
@@ -219,14 +226,14 @@ def change_data_type(request, community_id, data_type_id):
             }) 
         else:     
             for field in f['fields']:
-                if response['name'][key] == field['name']:
+                if response['name'][key].strip() == field['name']:
                     return render(request, 'vircom/edit_data_type.html', {
                         'community': community,
                         'data_type': data_type,
                         'field_list': field_list,
                         'error_message_fields': "You cannot use same field name twice.",
                     })
-        field_name = response['name'][key]
+        field_name = response['name'][key].strip()
         field_type = response['type'][key]   
         field_required = response['required'][key]              
         f['fields'].append(
@@ -270,7 +277,7 @@ def create_data_type_object(request, community_id, data_type_id):
             'fields': fields,
             'error_message': "You cannot leave required fields empty.",
         }) 
-        elif request.POST[field['name']] == "" and field['required'] == "No":
+        elif request.POST[field['name']] == "" or "[Leave Empty]" and field['required'] == "No":
             f['fields'].append(
                 {
                     "name": field['name'],
@@ -303,8 +310,8 @@ def delete_post(request, community_id, post_id):
 def edit_post(request, community_name, post_id):  
     community = get_object_or_404(Community, name=community_name)
     post = DataTypeObject.objects.get(pk=post_id)
-    data_type_name = post.data_type.name
-    data_type = get_object_or_404(DataType, name=data_type_name)
+    data_type = post.data_type
+    #data_type = get_object_or_404(DataType, name=data_type_name)
     for field_dt in data_type.fields['fields']:
         checker = False
         for field_post in post.fields['fields']:
