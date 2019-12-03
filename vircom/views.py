@@ -51,13 +51,29 @@ def create_community(request):
             'error_message': "Name and Description fields cannot be empty.",
         })
     else:
+        fields = {}
+        fields['fields'] = [{
+                "name": "Title",
+                "field_id": "1",
+                "field_type": "Text",
+                "required": "Yes",
+                "enumerated": "No",
+                "multi_choice": "off",
+                "options": []
+            },
+            {
+                "name": "Description",
+                "field_id": "2",
+                "field_type": "Long Text",
+                "required": "Yes",
+                "enumerated": "No",
+                "multi_choice": "off",
+                "options": []
+            }
+        ]
         community.save()
-        post = DataType (name="Default Post", community=community)
+        post = DataType (name="Generic Post", community=community, fields=fields)
         post.save()
-        title = Field(name="Title",field_type="Text",required="Yes", community=community,data_type=post)
-        title.save()
-        body = Field(name="Body",field_type="Long Text",required="Yes", community=community,data_type=post)
-        body.save()
         return HttpResponseRedirect(reverse('vircom:index'))
     
 
@@ -178,7 +194,7 @@ def edit_data_type(request, community_name, data_type_id):
     community = get_object_or_404(Community, name=community_name)
     data_type = DataType.objects.get(pk=data_type_id)
     field_list = data_type.fields
-    field_types = ["Text", "Long Text","Integer","Decimal Number", "Date", "Time", "Image", "Video", "Auido", "Location"]
+    field_types = ["Text", "Long Text","Integer","Decimal Number", "Date", "Time", "Image", "Video", "Audio", "Location"]
     context = {
         'community': community,
         'data_type': data_type,
