@@ -83,7 +83,11 @@
             {% endif %}
         </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="input-group-btn">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button class="btn btn-danger" type="submit" name="cancel" value="cancel"
+                style="margin-left: 10px;">Cancel</button>
+        </div>
     </form>
 
 

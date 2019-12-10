@@ -318,13 +318,15 @@ def new_data_type_object(request, community_name, data_type_id):
 
 def create_data_type_object(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
+    if "cancel" in request.POST:
+        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     data_type = get_object_or_404(DataType, pk=data_type_id)
     print(request.POST)
     dt_fields = data_type.fields
     f = {}
     f['fields'] = []
     for dt_field in dt_fields['fields']:
-        value = ""
+        value = []
         if dt_field['multi_choice'] == "on":
             for option in dt_field['options']:
                 try:
@@ -332,8 +334,7 @@ def create_data_type_object(request, community_id, data_type_id):
                 except KeyError:
                     option_selected = "off"    
                 if option_selected == "on":
-                    value = value + " " + option + ","       
-            value = value[:-1]
+                    value.append(option)  
             if value == "" and dt_field['required'] == "Yes":
                 return render(request, 'vircom/new_data_type_object.html', {
                     'community': community,
@@ -423,32 +424,69 @@ def edit_post(request, community_name, post_id):
 
 def change_post(request, community_id, post_id):
     community = get_object_or_404(Community, pk=community_id)
+    if "cancel" in request.POST:
+        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     post = DataTypeObject.objects.get(pk=post_id)
+    data_type = post.data_type
+    print(request.POST)
+    dt_fields = data_type.fields
     f = {}
     f['fields'] = []
-    for field in post.fields['fields']:
-        if request.POST[field['name']] == "" or None and field.required == "Yes":
-            return render(request, 'vircom/edit_post.html', {
+    for dt_field in dt_fields['fields']:
+        value = []
+        if dt_field['multi_choice'] == "on":
+            for option in dt_field['options']:
+                try:
+                    option_selected = request.POST[option]
+                except KeyError:
+                    option_selected = "off"    
+                if option_selected == "on":
+                    value.append(option)  
+            if value == "" and dt_field['required'] == "Yes":
+                return render(request, 'vircom/new_data_type_object.html', {
+                    'community': community,
+                    'data_type': data_type,
+                    'fields': dt_fields,
+                    'error_message': "You cannot leave required fields empty.",
+                })
+            else:
+                if value == "":
+                    value = "-"
+                f['fields'].append(
+                    {
+                        "name": dt_field['name'],
+                        "field_id": dt_field['field_id'],
+                        "field_type": dt_field['field_type'],
+                        "required": dt_field['required'],
+                        "enumerated": dt_field['enumerated'],
+                        "multi_choice": dt_field['multi_choice'],
+                        "options": dt_field['options'],
+                        "value": value
+                    }
+                )         
+        elif request.POST[dt_field['name']] == "" and dt_field['required'] == "Yes":
+            return render(request, 'vircom/new_data_type_object.html', {
             'community': community,
-            'post': post,
+            'data_type': data_type,
+            'fields': dt_fields,
             'error_message': "You cannot leave required fields empty.",
         }) 
-        elif request.POST[field['name']] == "" and field['required'] == "No":
+        else:
+            value = request.POST[dt_field['name']] 
+            print(value)   
+            if value == "" or value == "[Leave Empty]":
+                value = "-"
+            print(value)    
             f['fields'].append(
                 {
-                    "name": field['name'],
-                    "field_type": field['field_type'],
-                    "required": field['required'],
-                    "value": "-"
-                }
-            )
-        else:    
-            f['fields'].append(
-                {
-                    "name": field['name'],
-                    "field_type": field['field_type'],
-                    "required": field['required'],
-                    "value": request.POST[field['name']]
+                    "name": dt_field['name'],
+                    "field_id": dt_field['field_id'],
+                    "field_type": dt_field['field_type'],
+                    "required": dt_field['required'],
+                    "enumerated": dt_field['enumerated'],
+                    "multi_choice": dt_field['multi_choice'],
+                    "options": dt_field['options'],
+                    "value": value
                 }
             )
     post.fields = f
