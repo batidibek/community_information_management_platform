@@ -1,5 +1,6 @@
 var field;
-var option=0;
+var option;
+var ex_options = 0;
 function fields() {
     
     field++;
@@ -16,12 +17,15 @@ function fields() {
     fieldsDiv.appendChild(divtest)
     hiddenInputs.appendChild(hiddenInput)
 }
-   function remove_fields(field_id) {
-       $('.removeclass'+field_id).remove();
-       $('.removeInput'+field_id).remove();
-   }
 
-function addOption(field_id){
+function remove_fields(fieldid) {
+    var field_id = parseInt(fieldid);
+    $('.removeclass'+field_id).remove();
+    $('.removeInput'+field_id).remove();
+}
+
+function addOption(fieldid){
+    var field_id = parseInt(fieldid);
     option++;
     var objTo = document.getElementById('optionsField'+field_id);
     var divtest = document.createElement("div");
@@ -30,11 +34,13 @@ function addOption(field_id){
     objTo.appendChild(divtest)
 }   
 
-function removeOption(option_id) {
+function removeOption(optionid) {
+    var option_id = parseInt(optionid);
     $('.option'+option_id).remove();
 }
 
-function enumeration(field_id, choice){
+function enumeration(fieldid, choice){
+    var field_id = parseInt(fieldid);
     var radioYes = document.getElementById("enumeratedYes"+field_id);
     var radioNo = document.getElementById("enumeratedNo"+field_id);
     console.log("enumeratedNo"+field_id)
@@ -44,7 +50,7 @@ function enumeration(field_id, choice){
         $('#selectType'+field_id).attr("disabled", true);
         var selectType = document.getElementById("selectType"+field_id);
         var hiddenType = document.createElement("div");
-        hiddenType.setAttribute("class", "hiddenType"+field_id);
+        hiddenType.setAttribute("id", "hiddenType"+field_id);
         hiddenType.innerHTML = '<input type="hidden" name="type" value="Text">';
         selectType.appendChild(hiddenType)
 
@@ -59,7 +65,7 @@ function enumeration(field_id, choice){
     }
     else{
         $('#selectType'+field_id).attr("disabled", false);
-        $('.hiddenType'+field_id).remove;
+        $('#hiddenType'+field_id).remove();
         radioYes.checked = false;
         $('.optionsField'+field_id).empty();
     }    

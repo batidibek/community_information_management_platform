@@ -38,67 +38,171 @@
         <h5>Your Data Type must contain at least one custom field.</h5>
         {% if error_message_fields %}<p style="color: red"><strong>{{ error_message_fields }}</strong></p>{% endif %}
         <br />
-        {% for field in field_list.fields %}
-        <div class="form-group removeclass{{ forloop.counter }}">
-            <div class="row" style="width: 1000px">
-                <div class="col-sm-3 nopadding">
-                    <div class="form-group">
-                        <label for="InputName">Field Name</label>
-                        <input type="text" class="form-control" id="InputName" aria-describedby="fieldName"
-                            placeholder="Enter field name" name="name" value="{{field.name}}">
-                    </div>
-                </div>
-                <div class="col-sm-3 nopadding">
-                    <div class="form-group">
-                        <label for="FormControlType">Type</label>
-                        <select class="form-control" id="FormControlSelectType" name="type">
-                            {% for type in field_types %}
-                            {% if type == field.field_type %}
-                            <option selected>
-                                {{type}}
-                            </option>
-                            {% else %}
-                            <option>{{type}}</option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-sm-2 nopadding" style="margin-bottom: 0;">
-                    <div class="form-group form-check-inline" style="margin-top: 30px;">
-                        <input type="checkbox" class="form-check-input" id="enumeratedCheck" style="width: 20px; height: 20px;" name="enumerated" checked>
-                        <label class="form-check-label" for="enumeratedCheck" style="font-weight: normal; margin-bottom: 0;">Enumerated</label>
-                    </div>
-                </div>
-                <div class="col-sm-3 nopadding">
-                    <div class="input-group">
+        <div id="fields" style="width: 1000px">
+            {% for field in field_list.fields %}
+            <div class="form-group removeclass{{field.field_id}}">
+                <div class="row" style="width: 1000px">
+                    <div class="col-sm-3 nopadding">
                         <div class="form-group">
-                            <label for="FormControlRequired">Required Field?</label>
-                            <select class="form-control" id="FormControlSelectRequired" name="required">
-                                {% if field.required == "Yes" %}
-                                <option selected>Yes</option>
-                                <option>No</option>
-                                {% else %}
-                                <option>Yes</option>
-                                <option selected>No</option>
-                                {% endif %}
-                            </select>
+                            <label for="InputName">Field Name</label>
+                            <input type="text" class="form-control" id="InputName" aria-describedby="fieldName"
+                                placeholder="Enter field name" name="name" value="{{field.name}}">
                         </div>
-                        <div class="input-group-btn" style="top: 13px;"><label for="FormControlRemoveField">
-                            </label><button class="btn btn-danger" type="button"
-                                onclick="remove_fields('{{ forloop.counter }}');">
-                                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div>
+                    </div>
+                    <div class="col-sm-3 nopadding">
+                        <div class="form-group">
+                            <label for="FormControlType">Type</label>
+                            {% if field.enumerated == "No" %}
+                            <select class="form-control" id="selectType{{field.field_id}}" name="type">
+                                {% for type in field_types %}
+                                {% if type == field.field_type %}
+                                <option selected>{{type}}</option>
+                                {% else %}
+                                <option>{{type}}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <select class="form-control" id="selectType{{field.field_id}}" name="type"
+                                disabled="disabled">
+                                {% for type in field_types %}
+                                {% if type == field.field_type %}
+                                <option selected>{{type}}</option>
+                                {% else %}
+                                <option>{{type}}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            <div id="hiddenType{{field.field_id}}">
+                                <input type="hidden" name="type" value="Text">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-sm-2 nopadding">
+                        <div>
+                            <label class="form-check-label" for="enumeratedCheck">Enumerated?</label>
+                        </div>
+                        {% if field.enumerated == "No" %}
+                        <div class="form-check form-check-inline" style="margin-top:10px;">
+                            <input class="form-check-input" type="radio" name="enumerated{{field.field_id}}"
+                                id="enumeratedNo{{field.field_id}}" value="No"
+                                onclick="enumeration('{{field.field_id}}',false);" checked>
+                            <label class="form-check-label" for="enumeratedNo{{field.field_id}}">No</label>
+                        </div>
+                        <div class="form-check form-check-inline" style="margin-top:10px;">
+                            <input class="form-check-input" type="radio" name="enumerated{{field.field_id}}"
+                                id="enumeratedYes{{field.field_id}}" value="Yes"
+                                onclick="enumeration('{{field.field_id}}',true);">
+                            <label class="form-check-label" for="enumeratedYes{{field.field_id}}">Yes</label>
+                        </div>
+                        {% else %}
+                        <div class="form-check form-check-inline" style="margin-top:10px;">
+                            <input class="form-check-input" type="radio" name="enumerated{{field.field_id}}"
+                                id="enumeratedNo{{field.field_id}}" value="No"
+                                onclick="enumeration('{{field.field_id}}',false);">
+                            <label class="form-check-label" for="enumeratedNo{{field.field_id}}">No</label>
+                        </div>
+                        <div class="form-check form-check-inline" style="margin-top:10px;">
+                            <input class="form-check-input" type="radio" name="enumerated{{field.field_id}}"
+                                id="enumeratedYes{{field.field_id}}" value="Yes"
+                                onclick="enumeration('{{field.field_id}}',true);" checked>
+                            <label class="form-check-label" for="enumeratedYes{{field.field_id}}">Yes</label>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-3 nopadding">
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="FormControlRequired">Required Field?</label>
+                                <select class="form-control" id="FormControlSelectRequired" name="required">
+                                    {% if field.required == "Yes" %}
+                                    <option selected>Yes</option>
+                                    <option>No</option>
+                                    {% else %}
+                                    <option>Yes</option>
+                                    <option selected>No</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="input-group-btn" style="top: 13px;"><label for="FormControlRemoveField">
+                                </label><button class="btn btn-danger" type="button"
+                                    onclick="remove_fields('{{field.field_id}}');">
+                                    <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div>
+                        </div>
+                    </div>
+                    <div id="optionsField{{field.field_id}}" class="optionsField{{field.field_id}}"
+                        style="width: 1000px">
+
+                        {% if field.options != '[]' %}
+                        {% for key, value in option_counter.items %}
+                        {% if key == field.field_id %}
+                        {% for option in value %}
+                        {% if forloop.counter == 1 %}
+                        <div class="form-group option{{option.count}}">
+                            <div style="width: 250px; margin-left: 50px;">
+                                <div class="input-group">
+                                    <div class="form-check">
+                                        {% if field.multi_choice == "on" %}
+                                        <input class="form-check-input" type="checkbox" id="gridCheck"
+                                            name="multiChoice{{field.field_id}}" checked>
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" id="gridCheck"
+                                            name="multiChoice{{field.field_id}}">
+                                        {% endif %}
+                                        <label class="form-check-label" for="gridCheck"
+                                            style="margin-left: 15px;">Multiple
+                                            Choice?</label>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="InputOption"
+                                            aria-describedby="option" placeholder="Enter an option"
+                                            name="option{{field.field_id}}" value="{{option.value}}">
+                                    </div>
+                                    <div class="input-group-btn">
+                                        <label for="FormControlRemoveField"></label>
+                                        <button class="btn btn-success" type="button"
+                                            onclick="addOption('{{field.field_id}}');" style="margin-top: 20px;"><span
+                                                class="glyphicon glyphicon-plus" aria-hidden="true"></span> </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="form-group option{{option.count}}">
+                            <div style="width: 250px; margin-left: 50px;">
+                                <div class="input-group">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="InputOption"
+                                            aria-describedby="option" placeholder="Enter an option"
+                                            name="option{{field.field_id}}" value="{{option.value}}">
+                                    </div>
+                                    <div class="input-group-btn">
+                                        <label for="FormControlRemoveField"></label>
+                                        <button class="btn btn-danger" type="button"
+                                            onclick="removeOption('{{option.count}}');"><span
+                                                class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
-            <div id="options" style="width: 1000px"></div>
-            <div id="fields" style="width: 250px; margin-left: 50px;">
-                <input type="text" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}" placeholder="Enter an option "
-                value="{{field.value}}" name="{{field.name}}" >
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-        <div id="fields" style="width: 1000px"></div>
+        <div id="hiddenInputs" style="width: 1000px">
+            {% for field in field_list.fields %}
+            <div class="removeInput{{field.field_id}}">
+                <input type="hidden" id="fieldId" name="fieldId" value={{field.field_id}}>
+            </div>
+            {% endfor %}
+        </div>
     </form>
 
     <div class="input-group-btn">
@@ -116,7 +220,8 @@
     <script>
 
         $(document).ready(function () {
-            field = parseInt("{{field_list.fields|length}}")
+            field = parseInt("{{field_id}}");
+            option = parseInt("{{option}}");
         });
     </script>
 

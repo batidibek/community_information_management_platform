@@ -195,35 +195,54 @@ def edit_data_type(request, community_name, data_type_id):
     data_type = DataType.objects.get(pk=data_type_id)
     field_list = data_type.fields
     field_types = ["Text", "Long Text","Integer","Decimal Number", "Date", "Time", "Image", "Video", "Audio", "Location"]
+    field_id = 0
+    option = 0
+    option_counter = {}
+    for field in field_list["fields"]:
+        field_id = field["field_id"]
+        if field["options"] != []:
+            option_counter[field_id] = []
+            for key in field["options"]:
+                option = option + 1
+                option_counter[field_id].append({
+                    "count": option,
+                    "value": key
+                })
+    print(option_counter)            
     context = {
         'community': community,
         'data_type': data_type,
         'field_list': field_list,
-        'field_types': field_types
+        'field_types': field_types,
+        'field_id': field_id,
+        'option': option,
+        'option_counter': option_counter
     }
     return render(request, 'vircom/edit_data_type.html', context)
 
 def change_data_type(request, community_id, data_type_id):
+    print(request.POST)
     community = get_object_or_404(Community, pk=community_id)
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
-    data_type = DataType.objects.get(pk=data_type_id, community=community)
+    name = str(request.POST.get('title', "")).strip()
+    print(name)
+    data_type = get_object_or_404(DataType, pk=data_type_id)
     field_list = data_type.fields
     f = {}
     f['fields'] = []
-    name = str(request.POST.get('title', "")).strip()
     response = dict(request.POST.lists())
-    data_type_list = DataType.objects.filter(community=community)
+    data_type_list = DataType.objects.filter(community=community, is_archived=False)
     for dt in data_type_list:
         if dt.name == name and dt.name != data_type.name:
-            return render(request, 'vircom/edit_data_type.html', {
+            return render(request, 'vircom/new_data_type.html', {
             'community': community,
             'data_type': data_type,
             'field_list': field_list,
             'error_message': "There is a data type called " + name + " in this community.",
         })
     if data_type.name == "":
-        return render(request, 'vircom/edit_data_type.html', {
+        return render(request, 'vircom/new_data_type.html', {
             'community': community,
             'data_type': data_type,
             'field_list': field_list,
@@ -232,7 +251,7 @@ def change_data_type(request, community_id, data_type_id):
     else:
         data_type.name = name
     if request.POST.get('name') == None:
-        return render(request, 'vircom/edit_data_type.html', {
+        return render(request, 'vircom/new_data_type.html', {
             'community': community,
             'data_type': data_type,
             'field_list': field_list,
@@ -240,7 +259,7 @@ def change_data_type(request, community_id, data_type_id):
         })    
     for key in range(len(response['name'])):
         if response['name'][key].strip() == "":
-            return render(request, 'vircom/edit_data_type.html', {
+            return render(request, 'vircom/new_data_type.html', {
                 'community': community,
                 'data_type': data_type,
                 'field_list': field_list,
@@ -249,20 +268,33 @@ def change_data_type(request, community_id, data_type_id):
         else:     
             for field in f['fields']:
                 if response['name'][key].strip() == field['name']:
-                    return render(request, 'vircom/edit_data_type.html', {
+                    return render(request, 'vircom/new_data_type.html', {
                         'community': community,
                         'data_type': data_type,
                         'field_list': field_list,
                         'error_message_fields': "You cannot use same field name twice.",
                     })
+        field_id = response['fieldId'][key]
+        options = []
+        field_enumerated = response['enumerated'+field_id][0]
+        try:
+            multi_choice = response['multiChoice'+field_id][0]
+        except KeyError:
+            multi_choice = "off"
+        if field_enumerated == "Yes":
+            options = response['option'+field_id]       
         field_name = response['name'][key].strip()
         field_type = response['type'][key]   
-        field_required = response['required'][key]              
+        field_required = response['required'][key]          
         f['fields'].append(
             {
                 "name": field_name,
+                "field_id": field_id,
                 "field_type": field_type,
-                "required": field_required
+                "required": field_required,
+                "enumerated": field_enumerated,
+                "multi_choice": multi_choice,
+                "options": options
             }
         )
     data_type.fields = f
