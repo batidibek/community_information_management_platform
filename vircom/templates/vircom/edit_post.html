@@ -17,7 +17,7 @@
     {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
 
-    <form action="{% url 'vircom:change_post' community.id post.id %}" method="post" novalidate>
+    <form enctype="multipart/form-data" action="{% url 'vircom:change_post' community.id post.id %}" method="post" novalidate>
         {% csrf_token %}
         {% for field in post.fields.fields %}
         <div class="form-group">

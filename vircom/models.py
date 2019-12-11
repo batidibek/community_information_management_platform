@@ -32,6 +32,9 @@ class DataTypeObject(models.Model):
     # def __str__(self):
     #         return self.title
 
+class MediaFile(models.Model):
+    upload = models.FileField(upload_to='uploads')
+    url = models.TextField(blank = True)
     
     
 

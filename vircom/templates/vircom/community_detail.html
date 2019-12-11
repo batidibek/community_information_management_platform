@@ -20,6 +20,7 @@
             {% endfor %}
             {% endif %}<br />
             {% endfor %}
+            {{post.pub_date}}
         </div>
         <form action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button></form>
         <form action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button></form>

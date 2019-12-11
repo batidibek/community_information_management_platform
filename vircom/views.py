@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Community, DataType, DataTypeObject
+from .models import Community, DataType, DataTypeObject, MediaFile
 from django.http import Http404
 from django.urls import reverse
 import datetime
@@ -12,6 +12,7 @@ import json
 import uuid
 from django.core import serializers
 from django.http import JsonResponse
+from django.core.files import File
 
 
 # Create your views here.
@@ -322,6 +323,7 @@ def create_data_type_object(request, community_id, data_type_id):
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     data_type = get_object_or_404(DataType, pk=data_type_id)
     print(request.POST)
+    print(request.FILES)
     dt_fields = data_type.fields
     f = {}
     f['fields'] = []
@@ -341,7 +343,7 @@ def create_data_type_object(request, community_id, data_type_id):
                     'data_type': data_type,
                     'fields': dt_fields,
                     'error_message': "You cannot leave required fields empty.",
-                })
+                })    
             else:
                 if value == "":
                     value = "-"
@@ -356,7 +358,37 @@ def create_data_type_object(request, community_id, data_type_id):
                         "options": dt_field['options'],
                         "value": value
                     }
-                )         
+                )   
+        elif dt_field['field_type'] == "Image":
+            user_file = ""
+            try:
+                user_file = request.FILES[dt_field['name']]
+            except KeyError:
+                user_file = ""
+            if user_file == "" and dt_field['required'] == "Yes":
+                return render(request, 'vircom/new_data_type_object.html', {
+                    'community': community,
+                    'data_type': data_type,
+                    'fields': dt_fields,
+                    'error_message': "You cannot leave required fields empty.",
+            }) 
+            else:
+                media_file = MediaFile(upload=user_file, url="")
+                media_file.url = media_file.upload.name
+                print(media_file.url)
+                media_file.save()
+                f['fields'].append(
+                    {
+                        "name": dt_field['name'],
+                        "field_id": dt_field['field_id'],
+                        "field_type": dt_field['field_type'],
+                        "required": dt_field['required'],
+                        "enumerated": dt_field['enumerated'],
+                        "multi_choice": dt_field['multi_choice'],
+                        "options": dt_field['options'],
+                        "value": "/media/uploads/" + media_file.url
+                    }
+                )
         elif request.POST[dt_field['name']] == "" and dt_field['required'] == "Yes":
             return render(request, 'vircom/new_data_type_object.html', {
             'community': community,
@@ -365,11 +397,9 @@ def create_data_type_object(request, community_id, data_type_id):
             'error_message': "You cannot leave required fields empty.",
         }) 
         else:
-            value = request.POST[dt_field['name']] 
-            print(value)   
+            value = request.POST[dt_field['name']]  
             if value == "" or value == "[Leave Empty]":
-                value = "-"
-            print(value)    
+                value = "-"  
             f['fields'].append(
                 {
                     "name": dt_field['name'],
