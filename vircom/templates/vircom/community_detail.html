@@ -9,9 +9,20 @@
         <div>
             {{ post.data_type }}<br />
             {% for field in post.fields.fields %}
-            <b>{{field.name}}:</b> 
-            {% if field.field_type == "Image" and field.value != "" %}
-            <img src="{{field.value}}" style="width: 100px;"/>
+            <b>{{field.name}}:</b>
+            {% if field.field_type == "Image" and field.value != "-" %}
+            <img src="{{field.value}}" style="width: 320px;" />
+            {% elif field.field_type == "Video" and field.value != "-" %}
+            <video width="320" controls>
+                <source src="{{field.value}}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            {% elif field.field_type == "Audio" and field.value != "-" %}
+            <audio controls>
+                <source src="{{field.value}}" type="audio/wav">
+                <source src="{{field.value}}" type="audio/mpeg">
+                Your browser does not support the audio tag.
+            </audio>
             {% elif field.multi_choice == "off" %}
             {{field.value}}
             {% else %}
@@ -38,8 +49,10 @@
 {% for data_type in data_type_list %}
 {% if not data_type.is_archived %}
 <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">Create New {{data_type.name }}</a>
-    <form action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button type='submit'>Delete</button></form>
-    <form action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button></form>
+    <form action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button type='submit'>Delete</button>
+    </form>
+    <form action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button>
+    </form>
 </div>
 {% endif %}
 {% endfor %}

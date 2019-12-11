@@ -17,7 +17,8 @@
     {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
 
-    <form enctype="multipart/form-data" action="{% url 'vircom:change_post' community.id post.id %}" method="post" novalidate>
+    <form enctype="multipart/form-data" action="{% url 'vircom:change_post' community.id post.id %}" method="post"
+        novalidate>
         {% csrf_token %}
         {% for field in post.fields.fields %}
         <div class="form-group">
@@ -82,6 +83,24 @@
                     <input type="file" accept=".jpg,.gif,.png" class="custom-file-input" id="{{field.name}}"
                         aria-describedby="{{field.name}}" name="{{field.name}}">
                     <label class="custom-file-label" for="inputGroupFile01">Choose File. Only jpg, png, and gif files
+                        can be uploaded.</label>
+                </div>
+            </div>
+            {% elif field.field_type == "Video"%}
+            <div class="input-group">
+                <div class="form-control">
+                    <input type="file" accept=".mp4" class="custom-file-input" id="{{field.name}}"
+                        aria-describedby="{{field.name}}" name="{{field.name}}">
+                    <label class="custom-file-label" for="inputGroupFile01">Choose file. Only mp4 files
+                        can be uploaded.</label>
+                </div>
+            </div>
+            {% elif field.field_type == "Audio"%}
+            <div class="input-group">
+                <div class="form-control">
+                    <input type="file" accept=".mp3, .wav" class="custom-file-input" id="{{field.name}}"
+                        aria-describedby="{{field.name}}" name="{{field.name}}">
+                    <label class="custom-file-label" for="inputGroupFile01">Choose file. Only mp3 and wav files
                         can be uploaded.</label>
                 </div>
             </div>

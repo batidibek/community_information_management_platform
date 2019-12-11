@@ -347,7 +347,7 @@ def create_data_type_object(request, community_id, data_type_id):
                 return render(request, 'vircom/new_data_type_object.html', error_context)    
             elif value == "" and dt_field['required'] == "No":
                 value = "-" 
-        elif dt_field['field_type'] == "Image" or dt_field['field_type'] == "Video":
+        elif dt_field['field_type'] == "Image" or dt_field['field_type'] == "Video" or dt_field['field_type'] == "Audio":
             user_file = ""
             try:
                 user_file = request.FILES[dt_field['name']]
@@ -423,12 +423,19 @@ def edit_post(request, community_name, post_id):
 
 def change_post(request, community_id, post_id):
     community = get_object_or_404(Community, pk=community_id)
+    post = DataTypeObject.objects.get(pk=post_id)
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
-    post = DataTypeObject.objects.get(pk=post_id)
     data_type = post.data_type
     print(request.POST)
+    print(request.FILES)
     dt_fields = data_type.fields
+    error_context = {
+        'community': community,
+        'data_type': data_type,
+        'fields': dt_fields,
+        'error_message': "You cannot leave required fields empty.",
+    }
     f = {}
     f['fields'] = []
     for dt_field in dt_fields['fields']:
@@ -442,40 +449,31 @@ def change_post(request, community_id, post_id):
                 if option_selected == "on":
                     value.append(option)  
             if value == "" and dt_field['required'] == "Yes":
-                return render(request, 'vircom/new_data_type_object.html', {
-                    'community': community,
-                    'data_type': data_type,
-                    'fields': dt_fields,
-                    'error_message': "You cannot leave required fields empty.",
-                })
-            else:
-                if value == "":
-                    value = "-"
-                f['fields'].append(
-                    {
-                        "name": dt_field['name'],
-                        "field_id": dt_field['field_id'],
-                        "field_type": dt_field['field_type'],
-                        "required": dt_field['required'],
-                        "enumerated": dt_field['enumerated'],
-                        "multi_choice": dt_field['multi_choice'],
-                        "options": dt_field['options'],
-                        "value": value
-                    }
-                )         
-        elif request.POST[dt_field['name']] == "" and dt_field['required'] == "Yes":
-            return render(request, 'vircom/new_data_type_object.html', {
-            'community': community,
-            'data_type': data_type,
-            'fields': dt_fields,
-            'error_message': "You cannot leave required fields empty.",
-        }) 
-        else:
-            value = request.POST[dt_field['name']] 
-            print(value)   
-            if value == "" or value == "[Leave Empty]":
+                return render(request, 'vircom/new_data_type_object.html', error_context)    
+            elif value == "" and dt_field['required'] == "No":
+                value = "-" 
+        elif dt_field['field_type'] == "Image" or dt_field['field_type'] == "Video" or dt_field['field_type'] == "Audio":
+            user_file = ""
+            try:
+                user_file = request.FILES[dt_field['name']]
+            except KeyError:
+                user_file = ""
+            if user_file == "" and dt_field['required'] == "Yes":
+                return render(request, 'vircom/new_data_type_object.html', error_context) 
+            elif user_file == "" and dt_field['required'] == "No":
                 value = "-"
-            print(value)    
+            else: 
+                media_file = MediaFile(upload=user_file, url="")
+                media_file.url = media_file.upload.name
+                print(media_file.url)
+                media_file.save()
+                value = "/media/uploads/" + media_file.url
+        elif request.POST[dt_field['name']] == "" and dt_field['required'] == "Yes":
+            return render(request, 'vircom/new_data_type_object.html', error_context) 
+        else:
+            value = request.POST[dt_field['name']]  
+            if value == "" or value == "[Leave Empty]":
+                value = "-"  
         f['fields'].append(
             {
                 "name": dt_field['name'],
