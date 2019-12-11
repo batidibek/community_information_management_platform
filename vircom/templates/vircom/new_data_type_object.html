@@ -77,6 +77,16 @@
                         can be uploaded.</label>
                 </div>
             </div>
+
+            {% elif field.field_type == "Video"%}
+            <div class="input-group">
+                <div class="form-control">
+                    <input type="file" accept=".mp4" class="custom-file-input" id="{{field.name}}"
+                        aria-describedby="{{field.name}}" name="{{field.name}}">
+                    <label class="custom-file-label" for="inputGroupFile01">Choose file. Only mp4 files
+                        can be uploaded.</label>
+                </div>
+            </div>
             {% endif %}
             {% if field.required == "Yes" %}
             <small id="fieldType" class="form-text text-muted">Required field</small>

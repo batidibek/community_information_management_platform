@@ -325,6 +325,12 @@ def create_data_type_object(request, community_id, data_type_id):
     print(request.POST)
     print(request.FILES)
     dt_fields = data_type.fields
+    error_context = {
+        'community': community,
+        'data_type': data_type,
+        'fields': dt_fields,
+        'error_message': "You cannot leave required fields empty.",
+    }
     f = {}
     f['fields'] = []
     for dt_field in dt_fields['fields']:
@@ -338,80 +344,43 @@ def create_data_type_object(request, community_id, data_type_id):
                 if option_selected == "on":
                     value.append(option)  
             if value == "" and dt_field['required'] == "Yes":
-                return render(request, 'vircom/new_data_type_object.html', {
-                    'community': community,
-                    'data_type': data_type,
-                    'fields': dt_fields,
-                    'error_message': "You cannot leave required fields empty.",
-                })    
-            else:
-                if value == "":
-                    value = "-"
-                f['fields'].append(
-                    {
-                        "name": dt_field['name'],
-                        "field_id": dt_field['field_id'],
-                        "field_type": dt_field['field_type'],
-                        "required": dt_field['required'],
-                        "enumerated": dt_field['enumerated'],
-                        "multi_choice": dt_field['multi_choice'],
-                        "options": dt_field['options'],
-                        "value": value
-                    }
-                )   
-        elif dt_field['field_type'] == "Image":
+                return render(request, 'vircom/new_data_type_object.html', error_context)    
+            elif value == "" and dt_field['required'] == "No":
+                value = "-" 
+        elif dt_field['field_type'] == "Image" or dt_field['field_type'] == "Video":
             user_file = ""
             try:
                 user_file = request.FILES[dt_field['name']]
             except KeyError:
                 user_file = ""
             if user_file == "" and dt_field['required'] == "Yes":
-                return render(request, 'vircom/new_data_type_object.html', {
-                    'community': community,
-                    'data_type': data_type,
-                    'fields': dt_fields,
-                    'error_message': "You cannot leave required fields empty.",
-            }) 
-            else:
+                return render(request, 'vircom/new_data_type_object.html', error_context) 
+            elif user_file == "" and dt_field['required'] == "No":
+                value = "-"
+            else: 
                 media_file = MediaFile(upload=user_file, url="")
                 media_file.url = media_file.upload.name
                 print(media_file.url)
                 media_file.save()
-                f['fields'].append(
-                    {
-                        "name": dt_field['name'],
-                        "field_id": dt_field['field_id'],
-                        "field_type": dt_field['field_type'],
-                        "required": dt_field['required'],
-                        "enumerated": dt_field['enumerated'],
-                        "multi_choice": dt_field['multi_choice'],
-                        "options": dt_field['options'],
-                        "value": "/media/uploads/" + media_file.url
-                    }
-                )
+                value = "/media/uploads/" + media_file.url
         elif request.POST[dt_field['name']] == "" and dt_field['required'] == "Yes":
-            return render(request, 'vircom/new_data_type_object.html', {
-            'community': community,
-            'data_type': data_type,
-            'fields': dt_fields,
-            'error_message': "You cannot leave required fields empty.",
-        }) 
+            return render(request, 'vircom/new_data_type_object.html', error_context) 
         else:
             value = request.POST[dt_field['name']]  
             if value == "" or value == "[Leave Empty]":
                 value = "-"  
-            f['fields'].append(
-                {
-                    "name": dt_field['name'],
-                    "field_id": dt_field['field_id'],
-                    "field_type": dt_field['field_type'],
-                    "required": dt_field['required'],
-                    "enumerated": dt_field['enumerated'],
-                    "multi_choice": dt_field['multi_choice'],
-                    "options": dt_field['options'],
-                    "value": value
-                }
-            )
+        f['fields'].append(
+            {
+                "name": dt_field['name'],
+                "field_id": dt_field['field_id'],
+                "field_type": dt_field['field_type'],
+                "required": dt_field['required'],
+                "enumerated": dt_field['enumerated'],
+                "multi_choice": dt_field['multi_choice'],
+                "options": dt_field['options'],
+                "value": value
+            }
+        )
     data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=f)
     data_type_object.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))   
@@ -507,18 +476,18 @@ def change_post(request, community_id, post_id):
             if value == "" or value == "[Leave Empty]":
                 value = "-"
             print(value)    
-            f['fields'].append(
-                {
-                    "name": dt_field['name'],
-                    "field_id": dt_field['field_id'],
-                    "field_type": dt_field['field_type'],
-                    "required": dt_field['required'],
-                    "enumerated": dt_field['enumerated'],
-                    "multi_choice": dt_field['multi_choice'],
-                    "options": dt_field['options'],
-                    "value": value
-                }
-            )
+        f['fields'].append(
+            {
+                "name": dt_field['name'],
+                "field_id": dt_field['field_id'],
+                "field_type": dt_field['field_type'],
+                "required": dt_field['required'],
+                "enumerated": dt_field['enumerated'],
+                "multi_choice": dt_field['multi_choice'],
+                "options": dt_field['options'],
+                "value": value
+            }
+        )
     post.fields = f
     post.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
