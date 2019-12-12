@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--    Load Bootstrap via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+
+<body style="width: 1000px">
+
+    <h1>Join Vircom Now!</h1>
+    {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+    <form action="{% url 'vircom:create_user' %}" method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="InputUserName">Username</label>
+            <input type="text" class="form-control" id="InputUserName" aria-describedby="InputUserName"
+                placeholder="Enter username" name="username">
+            <small id="fieldType" class="form-text text-muted">Required</small>
+        </div>
+        <div class="form-group">
+            <label for="InputMail">Mail Adress</label>
+            <input type="text" class="form-control" id="InputMail" aria-describedby="InputMail"
+                placeholder="Enter e-mail adress" name="email">
+            <small id="fieldType" class="form-text text-muted">Required.</small>
+        </div>
+        <div class="form-group">
+            <label for="InputPassword">Password</label>
+            <input type="password" class="form-control" id="Password" aria-describedby="Password"
+                placeholder="Enter password" name="password">
+            <small id="fieldType" class="form-text text-muted">Required. Your password should contain at least 8
+                characters.</small>
+        </div>
+        
+        <div class="input-group-btn">
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+            <button class="btn btn-danger" type="submit" name="cancel" value="cancel"
+                style="margin-left: 10px;">Cancel</button>
+
+        </div>
+    </form>
+
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <!--Load Bootstrap JavaScript-->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
