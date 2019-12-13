@@ -13,7 +13,7 @@ urlpatterns = [
     path('new-community/', views.new_community, name='new_community'),
     path('<str:community_name>/<str:data_type_id>/edit', views.edit_data_type, name='edit_data_type'),
     path('sign-up/', views.sign_up, name='sign_up'),
-    path('login/', views.login, name='login'),
+    path('log-in/', views.log_in, name='log_in'),
     
     #REQUESTS
     path('<str:community_id>/<str:post_id>/delete-post/', views.delete_post, name='delete_post'),

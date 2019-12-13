@@ -14,6 +14,7 @@ from django.core import serializers
 from django.http import JsonResponse
 from django.core.files import File
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 
 # HOMEPAGE
 
@@ -361,10 +362,10 @@ def create_data_type_object(request, community_id, data_type_id):
                 print(media_file.url)
                 media_file.save()
                 value = "/media/uploads/" + media_file.url
-        elif request.POST[dt_field['name']] == "" and dt_field['required'] == "Yes":
+        elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
             return render(request, 'vircom/new_data_type_object.html', error_context) 
         else:
-            value = request.POST[dt_field['name']]  
+            value = str(request.POST[dt_field['name']]).strip()
             if value == "" or value == "[Leave Empty]":
                 value = "-"  
         f['fields'].append(
@@ -466,10 +467,10 @@ def change_post(request, community_id, post_id):
                 print(media_file.url)
                 media_file.save()
                 value = "/media/uploads/" + media_file.url
-        elif request.POST[dt_field['name']] == "" and dt_field['required'] == "Yes":
+        elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
             return render(request, 'vircom/new_data_type_object.html', error_context) 
         else:
-            value = request.POST[dt_field['name']]  
+            value = str(request.POST[dt_field['name']]).strip()  
             if value == "" or value == "[Leave Empty]":
                 value = "-"  
         f['fields'].append(
@@ -490,6 +491,8 @@ def change_post(request, community_id, post_id):
 
 
 #USER
+
+#SIGN UP
 
 def sign_up(request):
     return render(request, 'vircom/sign_up.html')
@@ -529,5 +532,48 @@ def create_user(request):
     user = User.objects.create_user(username=username, email=email, password=password)     
     user.save()
     return HttpResponseRedirect(reverse('vircom:index'))       
+
+#LOGIN
+
+def log_in(request):
+   return render(request, 'vircom/login.html')    
+
+def authenticate_user(request):
+    if "cancel" in request.POST:
+        return HttpResponseRedirect(reverse('vircom:index'))
+    user_key = request.POST["user_key"].strip()    
+    password = request.POST["password"] 
+    if user_key == "" or password == "":
+        return render(request, 'vircom/login.html', {
+            'error_message': "Please provide your username or email adress, and password.",
+        })
+    username_checker = False
+    try:
+        u = User.objects.get(username=user_key)
+    except:
+        username_checker = True
+    email_checker = False
+    try:
+        u = User.objects.get(email=user_key)
+    except:
+        email_checker = True
+    if username_checker and email_checker:
+       return render(request, 'vircom/login.html', {
+            'error_message': "This username or email adress does not exist.",
+        })         
+    user = authenticate(request, username=user_key, password=password)    
+    if user is not None:
+        login(request, user)
+        return HttpResponseRedirect(reverse('vircom:index'))
+    else:
+        user = authenticate(request, email=user_key, password=password) 
+        if user is not None:   
+            login(request, user)
+            return HttpResponseRedirect(reverse('vircom:index'))
+        else:
+            return render(request, 'vircom/login.html', {
+            'error_message': "Invalid password.",
+        })     
+    
 
 
