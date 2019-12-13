@@ -1,6 +1,9 @@
-<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
-<br />
-<a href="{% url 'vircom:log_in'%}">Log in</a>
+{% if user.username %}
+<p>Hi, {{user.username}}!</p>&nbsp;&nbsp;<a href="{% url 'vircom:log_out'%}">Log Out</a>
+{% else %}
+<a href="{% url 'vircom:log_in'%}">Log In</a>&nbsp;&nbsp;<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
+{% endif %}
+
 <br /><br /><br />
 {% if community_list %}
 <ul>

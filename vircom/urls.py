@@ -25,4 +25,5 @@ urlpatterns = [
     path('<str:community_id>/<str:data_type_id>/delete-data-type', views.delete_data_type, name='delete_data_type'),
     path('create-user/', views.create_user, name='create_user'),
     path('authenticate_user/', views.authenticate_user, name='authenticate_user'),
+    path('log-out/', views.log_out, name='log_out'),
 ]

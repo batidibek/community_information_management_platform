@@ -14,16 +14,22 @@ from django.core import serializers
 from django.http import JsonResponse
 from django.core.files import File
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 # HOMEPAGE
 
 def index(request):
     community_list = Community.objects.order_by('-pub_date')[:30]
-    #template = loader.get_template('vircom/index.html')
-    context = {
-        'community_list': community_list,
-    }
+    if request.user.is_authenticated:
+        user = request.user
+        context = {
+            'community_list': community_list,
+            'user': user
+        }
+    else:
+        context = {
+            'community_list': community_list,
+        }
     return render(request, 'vircom/index.html', context)
 
 # NEW COMMUNITY    
@@ -500,8 +506,8 @@ def sign_up(request):
 def create_user(request):
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:index'))
-    username = request.POST["username"]    
-    email = request.POST["email"]   
+    username = request.POST["username"].strip()    
+    email = request.POST["email"].strip()   
     password = request.POST["password"]   
     if username == "" or email == "" or password == "":
         return render(request, 'vircom/sign_up.html', {
@@ -574,6 +580,9 @@ def authenticate_user(request):
             return render(request, 'vircom/login.html', {
             'error_message': "Invalid password.",
         })     
-    
+
+def log_out(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('vircom:index'))    
 
 
