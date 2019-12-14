@@ -20,34 +20,37 @@ from django.contrib.auth import authenticate, login, logout
 
 def index(request):
     community_list = Community.objects.order_by('-pub_date')[:30]
-    if request.user.is_authenticated:
-        user = request.user
+    if not request.user.is_authenticated:
         context = {
             'community_list': community_list,
-            'user': user
         }
     else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
         context = {
             'community_list': community_list,
+            'user': vircom_user
         }
     return render(request, 'vircom/index.html', context)
 
 # NEW COMMUNITY    
 
 def new_community(request):    
-    if request.user.is_authenticated:
-        return render(request, 'vircom/new_community.html')
-    else:
+    if not request.user.is_authenticated:
         community_list = Community.objects.order_by('-pub_date')[:30]
-        user = request.user
         return render(request, 'vircom/index.html', {
             'community_list': community_list,
-            'user': user,
             'error_message': "You need to Log in or Sign up to create new community.",
         })
+    else:   
+        return render(request, 'vircom/new_community.html')
 
 
 def create_community(request):
+    if not request.user.is_authenticated:
+        return render(request, 'vircom/index.html', {
+            'community_list': community_list,
+            'error_message': "You need to Log in or Sign up to create new community.",
+        }) 
     name = str(request.POST.get('name', "")).strip()
     description = str(request.POST.get('description', "")).strip()
     tags = request.POST['tags']
@@ -63,7 +66,6 @@ def create_community(request):
     community = Community(name=name, description=description, pub_date=datetime.datetime.now() ,tags=tags_dict, user=request.user)
     if community.name == "" or community.description == "":
         return render(request, 'vircom/new_community.html', {
-            'user': request.user,
             'community': community,
             'error_message': "Name and Description fields cannot be empty.",
         })
@@ -94,26 +96,54 @@ def create_community(request):
         vircom_user = get_object_or_404(VircomUser, user=request.user)
         vircom_user.joined_communities.append(community.pk)
         vircom_user.save()
-        return HttpResponseRedirect(reverse('vircom:index'))
+        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
 # JOIN COMMUNITY        
 
 def join_community(request, community_id):
     community = get_object_or_404(Community, pk=community_id)
-    if not request.user.is_authenticated:
-        data_type_list = DataType.objects.filter(community=community).order_by('pk')
-        data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
-        return render(request, 'vircom/community_detail.html', {
+    data_type_list = DataType.objects.filter(community=community).order_by('pk')
+    data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    context = {
             'user': request.user,
             'community': community,
             'data_type_list':  data_type_list,
             'data_type_object_list': data_type_object_list,
-            'error_message': "You need to Log in or Sign up to create new community.",
-        })
+    }
+    if not request.user.is_authenticated:
+        context["error_message"] = "You need to Log in or Sign up to join a community."
+        return render(request, 'vircom/community_detail.html', context)
     vircom_user = get_object_or_404(VircomUser, user=request.user)
+    if community.pk in vircom_user.joined_communities:
+        context["joined"] = True
+        context["error_message"] = "You are already a member of " + community.name + "."
+        return render(request, 'vircom/community_detail.html', context)
     vircom_user.joined_communities.append(community.pk)
     vircom_user.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
+
+# UNSUBSCRIBE COMMUNITY
+
+def unsubscribe_community(request, community_id):
+    community = get_object_or_404(Community, pk=community_id)
+    data_type_list = DataType.objects.filter(community=community).order_by('pk')
+    data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    context = {
+            'community': community,
+            'data_type_list':  data_type_list,
+            'data_type_object_list': data_type_object_list,
+    }
+    if not request.user.is_authenticated:    
+        return render(request, 'vircom/community_detail.html', context)
+    vircom_user = get_object_or_404(VircomUser, user=request.user)
+    context["user"] = vircom_user  
+    if community.pk not in vircom_user.joined_communities:
+        context["error_message"] = "You are not a member of " + community.name + "."
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user.joined_communities.remove(community.pk)
+        vircom_user.save()
+        return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
 # COMMUNITY DETAIL    
 
@@ -122,12 +152,19 @@ def community_detail(request, community_name):
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     context = {
-        'user': request.user,
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
     }
-    return render(request, 'vircom/community_detail.html', context)
+    if not request.user.is_authenticated:
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
+        if community.pk in vircom_user.joined_communities:
+            context["joined"] = True
+        return render(request, 'vircom/community_detail.html', context)
+    
 
 #NEW DATA TYPE        
 
