@@ -35,7 +35,17 @@ def index(request):
 # NEW COMMUNITY    
 
 def new_community(request):    
-    return render(request, 'vircom/new_community.html')
+    if request.user.is_authenticated:
+        return render(request, 'vircom/new_community.html')
+    else:
+        community_list = Community.objects.order_by('-pub_date')[:30]
+        user = request.user
+        return render(request, 'vircom/index.html', {
+            'community_list': community_list,
+            'user': user,
+            'error_message': "You need to Log in or Sign up to create new community.",
+        })
+
 
 def create_community(request):
     name = str(request.POST.get('name', "")).strip()
@@ -81,6 +91,8 @@ def create_community(request):
         post = DataType (name="Generic Post", community=community, fields=fields)
         post.save()
         return HttpResponseRedirect(reverse('vircom:index'))
+
+# JOIN COMMUNITY        
     
 
 # COMMUNITY DETAIL    
@@ -537,6 +549,7 @@ def create_user(request):
         })
     user = User.objects.create_user(username=username, email=email, password=password)     
     user.save()
+    login(request, user)
     return HttpResponseRedirect(reverse('vircom:index'))       
 
 #LOGIN

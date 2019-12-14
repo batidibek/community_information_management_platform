@@ -40,8 +40,8 @@ class MediaFile(models.Model):
 class VircomUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     joined_communities = ArrayField(models.IntegerField())
-    data_types = ArrayField(models.IntegerField())
-    posts = ArrayField(models.IntegerField())
+    #data_types = ArrayField(models.IntegerField())
+    #posts = ArrayField(models.IntegerField())
 
     
     

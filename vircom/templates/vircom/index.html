@@ -3,7 +3,7 @@
 {% else %}
 <a href="{% url 'vircom:log_in'%}">Log In</a>&nbsp;&nbsp;<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
 {% endif %}
-
+{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 <br /><br /><br />
 {% if community_list %}
 <ul>
