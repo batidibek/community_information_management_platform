@@ -11,9 +11,9 @@
 <br />
 
 {% if joined %}
-<form action="{% url 'vircom:unsubscribe_community' community.pk %}"><button type='submit'>Unsubscribe {{ community.name }}</button></form>
+<form action="{% url 'vircom:unsubscribe_community' community.pk %}"><button type='submit'>Unsubscribe</button></form>
 {% else %}
-<form action="{% url 'vircom:join_community' community.pk %}"><button type='submit'>Join {{ community.name }}</button></form>
+<form action="{% url 'vircom:join_community' community.pk %}"><button type='submit'>Join</button></form>
 {% endif %}
 
 {% if data_type_object_list%}
@@ -21,7 +21,7 @@
     {% for post in data_type_object_list %}
     <li>
         <div>
-            {{ post.data_type }}<br />
+            {{ post.data_type.name }}<br />
             {% for field in post.fields.fields %}
             <b>{{field.name}}:</b>
             {% if field.field_type == "Image" and field.value != "-" %}
@@ -45,7 +45,7 @@
             {% endfor %}
             {% endif %}<br />
             {% endfor %}
-            {{post.pub_date}}
+            {{post.pub_date}}<br />{{post.user.username}}
         </div>
         <form action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button></form>
         <form action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button></form>
@@ -63,13 +63,21 @@
 {% for data_type in data_type_list %}
 {% if not data_type.is_archived %}
 <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">Create New {{data_type.name }}</a>
+    {% if data_type.name != "Generic Post" %}
+    {% if data_type.user == user.user %}
+    {% if joined %}
     <form action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button type='submit'>Delete</button>
     </form>
     <form action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button>
     </form>
+    {% endif %}
+    {% endif %}
+    {% endif %}
 </div>
 {% endif %}
 {% endfor %}
 {% endif %}
 <br /><br />
+{% if joined %}
 <div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>
+{% endif %}

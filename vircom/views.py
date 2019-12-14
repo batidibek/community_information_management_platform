@@ -170,65 +170,80 @@ def community_detail(request, community_name):
 
 def new_data_type(request, community_name):        
     community = get_object_or_404(Community, name=community_name)
+    data_type_list = DataType.objects.filter(community=community).order_by('pk')
+    data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     context = {
         'community': community,
+        'data_type_list':  data_type_list,
+        'data_type_object_list': data_type_object_list,
     }
+    if not request.user.is_authenticated:
+        context["error_message"] = "You need to Log in or Sign up to create a data type."
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
+        if community.pk not in vircom_user.joined_communities:
+            context["error_message"] = "You need to join " + community.name + " to create a data type."
+            return render(request, 'vircom/community_detail.html', context)
     return render(request, 'vircom/new_data_type.html', context) 
 
 def create_data_type(request, community_id):
-    print(request.POST)
     community = get_object_or_404(Community, pk=community_id)
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     name = str(request.POST.get('title', "")).strip()
-    print(name)
     data_type = DataType(name=name, community=community, fields={})
     field_list = data_type.fields
+    context = {
+            'community': community,
+            'data_type': data_type,
+            'field_list': field_list,
+        }
+    if not request.user.is_authenticated:
+        context = {
+        'community': community,   
+        'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
+        'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+        'error_message': "You need to Log in or Sign up to join a community."
+        }
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        if community.pk not in vircom_user.joined_communities:
+            context = {
+                'user': vircom_user,
+                'community': community,   
+                'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
+                'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+                'error_message': "You need to join " + community.name + " to create a data type."
+            }
+            return render(request, 'vircom/community_detail.html', context)
     f = {}
     f['fields'] = []
     response = dict(request.POST.lists())
-    data_type_list = DataType.objects.filter(community=community, is_archived=False)
+    data_type_list = DataType.objects.filter(community=community, is_archived=False, user=request.user)
     for dt in data_type_list:
         if dt.name == name and dt.name != data_type.name:
-            return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message': "There is a data type called " + name + " in this community.",
-        })
-    if data_type.name == "":
-        return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message': "Title field cannot be empty.",
-        }) 
+            context["error_message"] = "There is a data type called " + name + " in this community."
+            return render(request, 'vircom/new_data_type.html', context)
+    if data_type.name == "": 
+        context["error_message"] = "Title field cannot be empty."
+        return render(request, 'vircom/new_data_type.html', context) 
     else:
         data_type.name = name
     if request.POST.get('name') == None:
-        return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message_fields': "You need to add at least one field.",
-        })    
+        context["error_message_fields"] = "You need to add at least one field."
+        return render(request, 'vircom/new_data_type.html', context)    
     for key in range(len(response['name'])):
         if response['name'][key].strip() == "":
-            return render(request, 'vircom/new_data_type.html', {
-                'community': community,
-                'data_type': data_type,
-                'field_list': field_list,
-                'error_message_fields': "Field Name cannot be empty.",
-            }) 
+            context["error_message_fields"] = "Field Name cannot be empty."
+            return render(request, 'vircom/new_data_type.html', context) 
         else:     
             for field in f['fields']:
                 if response['name'][key].strip() == field['name']:
-                    return render(request, 'vircom/new_data_type.html', {
-                        'community': community,
-                        'data_type': data_type,
-                        'field_list': field_list,
-                        'error_message_fields': "You cannot use same field name twice.",
-                    })
+                    context["error_message_fields"] = "You cannot use same field name twice."
+                    return render(request, 'vircom/new_data_type.html', context)
         field_id = response['fieldId'][key]
         options = []
         field_enumerated = response['enumerated'+field_id][0]
@@ -253,6 +268,7 @@ def create_data_type(request, community_id):
             }
         )
     data_type.fields = f
+    data_type.user = request.user
     data_type.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))           
 
@@ -262,13 +278,45 @@ def create_data_type(request, community_id):
 def delete_data_type(request, community_id, data_type_id):    
     community = get_object_or_404(Community, pk=community_id)
     data_type = DataType.objects.get(pk=data_type_id)
+    data_type_list = DataType.objects.filter(community=community).order_by('pk')
+    data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    context = {
+        'community': community,
+        'data_type_list':  data_type_list,
+        'data_type_object_list': data_type_object_list,
+    }
+    if not request.user.is_authenticated:
+        context["error_message"] = "You need to Log in or Sign up."
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
+        if data_type.user != vircom_user.user:
+            context["error_message"] = "You can only delete types which you created."
+            return render(request, 'vircom/community_detail.html', context)
     data_type.is_archived = True
     data_type.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
 def edit_data_type(request, community_name, data_type_id):  
     community = get_object_or_404(Community, name=community_name)
+    data_type_list = DataType.objects.filter(community=community).order_by('pk')
+    data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     data_type = DataType.objects.get(pk=data_type_id)
+    context = {
+        'community': community,
+        'data_type_list':  data_type_list,
+        'data_type_object_list': data_type_object_list,
+    }
+    if not request.user.is_authenticated:
+        context["error_message"] = "You need to Log in or Sign up."
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
+        if data_type.user != vircom_user.user:
+            context["error_message"] = "You can only edit data types which you created."
+            return render(request, 'vircom/community_detail.html', context)
     field_list = data_type.fields
     field_types = ["Text", "Long Text","Integer","Decimal Number", "Date", "Time", "Image", "Video", "Audio", "Location"]
     field_id = 0
@@ -305,51 +353,55 @@ def change_data_type(request, community_id, data_type_id):
     print(name)
     data_type = get_object_or_404(DataType, pk=data_type_id)
     field_list = data_type.fields
+    context = {
+            'community': community,
+            'data_type': data_type,
+            'field_list': field_list,
+    }
+    if not request.user.is_authenticated:
+        context = {
+        'community': community,   
+        'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
+        'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+        'error_message': "You need to Log in or Sign up."
+        }
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        if data_type.user != vircom_user.user:
+            context = {
+                'user': vircom_user,
+                'community': community,   
+                'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
+                'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+                'error_message': "You can only edit data types which you created."
+            }
+            return render(request, 'vircom/community_detail.html', context)
     f = {}
     f['fields'] = []
     response = dict(request.POST.lists())
     data_type_list = DataType.objects.filter(community=community, is_archived=False)
     for dt in data_type_list:
         if dt.name == name and dt.name != data_type.name:
-            return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message': "There is a data type called " + name + " in this community.",
-        })
+            context["error_message"] = "There is a data type called " + name + " in this community."
+            return render(request, 'vircom/new_data_type.html', context)
     if data_type.name == "":
-        return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message': "Title field cannot be empty.",
-        }) 
+        context["error_message"] = "Title field cannot be empty."
+        return render(request, 'vircom/new_data_type.html', context) 
     else:
         data_type.name = name
     if request.POST.get('name') == None:
-        return render(request, 'vircom/new_data_type.html', {
-            'community': community,
-            'data_type': data_type,
-            'field_list': field_list,
-            'error_message_fields': "You need to add at least one field.",
-        })    
+        context["error_message_fields"] = "You need to add at least one field."
+        return render(request, 'vircom/new_data_type.html', context)    
     for key in range(len(response['name'])):
         if response['name'][key].strip() == "":
-            return render(request, 'vircom/new_data_type.html', {
-                'community': community,
-                'data_type': data_type,
-                'field_list': field_list,
-                'error_message_fields': "Field Name cannot be empty.",
-            }) 
+            context["error_message_fields"] = "Field Name cannot be empty."
+            return render(request, 'vircom/new_data_type.html', context) 
         else:     
             for field in f['fields']:
                 if response['name'][key].strip() == field['name']:
-                    return render(request, 'vircom/new_data_type.html', {
-                        'community': community,
-                        'data_type': data_type,
-                        'field_list': field_list,
-                        'error_message_fields': "You cannot use same field name twice.",
-                    })
+                    context["error_message_fields"] = "You cannot use same field name twice."
+                    return render(request, 'vircom/new_data_type.html', context)
         field_id = response['fieldId'][key]
         options = []
         field_enumerated = response['enumerated'+field_id][0]
@@ -576,9 +628,13 @@ def sign_up(request):
 def create_user(request):
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:index'))
-    username = request.POST["username"].strip()    
-    email = request.POST["email"].strip()   
+    username = request.POST["username"] 
+    email = request.POST["email"]
     password = request.POST["password"]   
+    if " " in username:
+        return render(request, 'vircom/sign_up.html', {
+            'error_message': "You cannot use blank space in username.",
+        })
     if username == "" or email == "" or password == "":
         return render(request, 'vircom/sign_up.html', {
             'error_message': "You cannot leave username, mail adress and password fields empty.",
@@ -620,7 +676,8 @@ def log_in(request):
 def authenticate_user(request):
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:index'))
-    user_key = request.POST["user_key"].strip()    
+    user_key = request.POST["user_key"]
+    print(user_key)  
     password = request.POST["password"] 
     if user_key == "" or password == "":
         return render(request, 'vircom/login.html', {
@@ -634,6 +691,7 @@ def authenticate_user(request):
     email_checker = False
     try:
         u = User.objects.get(email=user_key)
+        user_key = u.username
     except:
         email_checker = True
     if username_checker and email_checker:
@@ -645,14 +703,9 @@ def authenticate_user(request):
         login(request, user)
         return HttpResponseRedirect(reverse('vircom:index'))
     else:
-        user = authenticate(request, email=user_key, password=password) 
-        if user is not None:   
-            login(request, user)
-            return HttpResponseRedirect(reverse('vircom:index'))
-        else:
-            return render(request, 'vircom/login.html', {
-            'error_message': "Invalid password.",
-        })     
+        return render(request, 'vircom/login.html', {
+        'error_message': "Invalid password.",
+    })     
 
 def log_out(request):
     logout(request)
