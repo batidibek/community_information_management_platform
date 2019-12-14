@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Community, DataType, DataTypeObject, MediaFile
+from .models import Community, DataType, DataTypeObject, MediaFile, VircomUser
 from django.http import Http404
 from django.urls import reverse
 import datetime
@@ -60,9 +60,10 @@ def create_community(request):
             "tag": tag
             }
         )
-    community = Community(name=name, description=description, pub_date=datetime.datetime.now(),tags=tags_dict)
+    community = Community(name=name, description=description, pub_date=datetime.datetime.now() ,tags=tags_dict, user=request.user)
     if community.name == "" or community.description == "":
         return render(request, 'vircom/new_community.html', {
+            'user': request.user,
             'community': community,
             'error_message': "Name and Description fields cannot be empty.",
         })
@@ -88,12 +89,31 @@ def create_community(request):
             }
         ]
         community.save()
-        post = DataType (name="Generic Post", community=community, fields=fields)
+        post = DataType (name="Generic Post", community=community, fields=fields, user=request.user)
         post.save()
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        vircom_user.joined_communities.append(community.pk)
+        vircom_user.save()
         return HttpResponseRedirect(reverse('vircom:index'))
 
 # JOIN COMMUNITY        
-    
+
+def join_community(request, community_id):
+    community = get_object_or_404(Community, pk=community_id)
+    if not request.user.is_authenticated:
+        data_type_list = DataType.objects.filter(community=community).order_by('pk')
+        data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+        return render(request, 'vircom/community_detail.html', {
+            'user': request.user,
+            'community': community,
+            'data_type_list':  data_type_list,
+            'data_type_object_list': data_type_object_list,
+            'error_message': "You need to Log in or Sign up to create new community.",
+        })
+    vircom_user = get_object_or_404(VircomUser, user=request.user)
+    vircom_user.joined_communities.append(community.pk)
+    vircom_user.save()
+    return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
 
 # COMMUNITY DETAIL    
 
@@ -102,6 +122,7 @@ def community_detail(request, community_name):
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     context = {
+        'user': request.user,
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
@@ -550,6 +571,8 @@ def create_user(request):
     user = User.objects.create_user(username=username, email=email, password=password)     
     user.save()
     login(request, user)
+    vircom_user = VircomUser(user=user)
+    vircom_user.save()
     return HttpResponseRedirect(reverse('vircom:index'))       
 
 #LOGIN

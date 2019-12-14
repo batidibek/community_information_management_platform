@@ -26,4 +26,5 @@ urlpatterns = [
     path('create-user/', views.create_user, name='create_user'),
     path('authenticate_user/', views.authenticate_user, name='authenticate_user'),
     path('log-out/', views.log_out, name='log_out'),
+    path('<str:community_id>/join-community', views.join_community, name='join_community'),
 ]
