@@ -291,7 +291,9 @@ def delete_data_type(request, community_id, data_type_id):
     else:
         vircom_user = get_object_or_404(VircomUser, user=request.user)
         context["user"] = vircom_user
-        if data_type.user != vircom_user.user:
+        if data_type.user != vircom_user.user or data_type.name == "Generic Post":
+            if community.pk in vircom_user.joined_communities:
+                context["joined"] = True
             context["error_message"] = "You can only delete types which you created."
             return render(request, 'vircom/community_detail.html', context)
     data_type.is_archived = True
@@ -314,7 +316,9 @@ def edit_data_type(request, community_name, data_type_id):
     else:
         vircom_user = get_object_or_404(VircomUser, user=request.user)
         context["user"] = vircom_user
-        if data_type.user != vircom_user.user:
+        if data_type.user != vircom_user.user or data_type.name == "Generic Post":
+            if community.pk in vircom_user.joined_communities:
+                context["joined"] = True
             context["error_message"] = "You can only edit data types which you created."
             return render(request, 'vircom/community_detail.html', context)
     field_list = data_type.fields
@@ -368,7 +372,7 @@ def change_data_type(request, community_id, data_type_id):
         return render(request, 'vircom/community_detail.html', context)
     else:
         vircom_user = get_object_or_404(VircomUser, user=request.user)
-        if data_type.user != vircom_user.user:
+        if data_type.user != vircom_user.user or data_type.name == "Generic Post":
             context = {
                 'user': vircom_user,
                 'community': community,   
@@ -376,6 +380,8 @@ def change_data_type(request, community_id, data_type_id):
                 'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
                 'error_message': "You can only edit data types which you created."
             }
+            if community.pk in vircom_user.joined_communities:
+                context["joined"] = True
             return render(request, 'vircom/community_detail.html', context)
     f = {}
     f['fields'] = []
@@ -433,7 +439,23 @@ def change_data_type(request, community_id, data_type_id):
 
 def new_data_type_object(request, community_name, data_type_id):        
     community = get_object_or_404(Community, name=community_name)
+    data_type_list = DataType.objects.filter(community=community).order_by('pk')
+    data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     data_type = get_object_or_404(DataType, pk=data_type_id, community=community)
+    context = {
+        'community': community,
+        'data_type_list':  data_type_list,
+        'data_type_object_list': data_type_object_list,
+    }
+    if not request.user.is_authenticated:
+        context["error_message"] = "You need to Log in or Sign up."
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
+        if community.pk not in vircom_user.joined_communities:
+            context["error_message"] = "You can only post on the communities which you joined."
+            return render(request, 'vircom/community_detail.html', context)
     if data_type.is_archived:
             return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     fields = data_type.fields
@@ -446,11 +468,28 @@ def new_data_type_object(request, community_name, data_type_id):
 
 def create_data_type_object(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
+    if not request.user.is_authenticated:
+        context = {
+        'community': community,   
+        'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
+        'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+        'error_message': "You need to Log in or Sign up."
+        }
+        return render(request, 'vircom/community_detail.html', context)
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        if community.pk not in vircom_user.joined_communities:
+            context = {
+                'user': vircom_user,
+                'community': community,   
+                'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
+                'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+                'error_message': "You can only post on the communities which you joined."
+            }
+            return render(request, 'vircom/community_detail.html', context)
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     data_type = get_object_or_404(DataType, pk=data_type_id)
-    print(request.POST)
-    print(request.FILES)
     dt_fields = data_type.fields
     error_context = {
         'community': community,

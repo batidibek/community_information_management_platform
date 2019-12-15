@@ -58,25 +58,25 @@
 {% endif %}
 
 
-
+{% if joined %}
 {% if data_type_list %}
 {% for data_type in data_type_list %}
 {% if not data_type.is_archived %}
 <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">Create New {{data_type.name }}</a>
     {% if data_type.name != "Generic Post" %}
     {% if data_type.user == user.user %}
-    {% if joined %}
     <form action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button type='submit'>Delete</button>
     </form>
     <form action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button>
     </form>
     {% endif %}
     {% endif %}
-    {% endif %}
 </div>
 {% endif %}
 {% endfor %}
 {% endif %}
+{% endif %}
+
 <br /><br />
 {% if joined %}
 <div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>
