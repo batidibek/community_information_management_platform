@@ -59,7 +59,7 @@
                 value="{{field.value}}" name="{{field.name}}">
 
             {% elif field.field_type == "Long Text"%}
-            <textarea class="form-control" id="{{field.name}}" rows="5" name="{{field.name}}">{{field.value}}</textarea>
+            <textarea class="form-control" id="{{field.name}}" rows="5"  name="{{field.name}}">{{field.value}}</textarea>
 
             {% elif field.field_type == "Integer"%}
             <input type="number" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
@@ -71,11 +71,11 @@
 
             {% elif field.field_type == "Date"%}
             <input type="date" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
-                placeholder="Enter {{field.name}}" name="{{field.name}}">
+                placeholder="Enter {{field.name}}" value="{{field.value}}" name="{{field.name}}">
 
             {% elif field.field_type == "Time"%}
             <input type="time" class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
-                placeholder="Enter {{field.name}}" name="{{field.name}}">
+                placeholder="Enter {{field.name}}" value="{{field.value}}" name="{{field.name}}">
 
             {% elif field.field_type == "Image"%}
             <div class="input-group">

@@ -22,4 +22,6 @@
 {% endif %}
 
 <br /><br /><br />
+{% if user.user %}
 <a href="{% url 'vircom:new_community'%}">Create New Community</a>
+{% endif %}
