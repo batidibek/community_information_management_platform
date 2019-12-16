@@ -33,7 +33,7 @@
                 <a href="{% url 'vircom:community_detail' community.name %}">{{ community.name}}</a><br />
                 {{community.description}}<br />
                 <div class="input-group">{% for tag in community.tags.tags%}<p class="WikiItemTag">{{tag.tag}}<span
-                    class="textboxwWikiInfo"><a href="{{tag.url}}" style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>{% endfor %}</div><br /><br /><br />
+                    class="textboxwWikiInfo"><a href="{{tag.url}}" style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>&nbsp;&nbsp;&nbsp;&nbsp;{% endfor %}</div><br /><br /><br />
             </div>
         </li>
         {% endfor %}
