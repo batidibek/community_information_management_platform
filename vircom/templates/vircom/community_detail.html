@@ -1,85 +1,143 @@
-{% if user.user %}
-<p>Hi, {{user.user.username}}!</p>&nbsp;&nbsp;<a href="{% url 'vircom:log_out'%}">Log Out</a>
-{% else %}
-<a href="{% url 'vircom:log_in'%}">Log In</a>&nbsp;&nbsp;<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
-{% endif %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--    Load Bootstrap via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css"
+        rel="stylesheet" />
+    {% load static %}
+    <link href="{% static 'vircom/css/text_boxes.css' %}" rel="stylesheet">
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+
+<body style="width: 1000px">
+
+    {% if user.user %}
+    <p>Hi, {{user.user.username}}!</p>&nbsp;&nbsp;<a href="{% url 'vircom:log_out'%}">Log Out</a>
+    {% else %}
+    <a href="{% url 'vircom:log_in'%}">Log In</a>&nbsp;&nbsp;<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
+    {% endif %}
+
+    <a style="display: inline;" href="{% url 'vircom:index' %}">Homepage</a>
+    
+    <br /><br /><br />
+    <h1 style="display: inline;">{{ community.name }}</h1>
+    
+
+    {% if joined %}
+    <form style="display: inline;" action="{% url 'vircom:unsubscribe_community' community.pk %}"><button style="margin-bottom: 18px;" type='submit' class="btn btn-danger">Unsubscribe</button>
+    </form>
+    {% else %}
+    <form style="display: inline;" action="{% url 'vircom:join_community' community.pk %}"><button type='submit' style="margin-bottom: 18px;" class="btn btn-primary">Join</button></form>
+    {% endif %}
+    <br />
+    <div class="input-group">{% for tag in community.tags.tags%}<p class="WikiItemTag">{{tag.tag}}<span
+        class="textboxwWikiInfo"><a href="{{tag.url}}" style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>&nbsp;&nbsp;&nbsp;&nbsp;{% endfor %}
+    </div>
 
 
-<a href="{% url 'vircom:index' %}">Homepage</a>
-<h1>{{ community.name }}</h1>
-{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-<br />
+    <br /><br />{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}<br />
+    {% if data_type_object_list%}
+    <ul>
+        {% for post in data_type_object_list %}
+        <li>
+            <div>
+                {{ post.data_type.name }}<br />
+                {% for field in post.fields.fields %}
+                <b>{{field.name}}:</b>
+                {% if field.field_type == "Image" and field.value != "-" %}
+                <img src="{{field.value}}" style="width: 320px;" />
+                {% elif field.field_type == "Video" and field.value != "-" %}
+                <video width="320" controls>
+                    <source src="{{field.value}}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% elif field.field_type == "Audio" and field.value != "-" %}
+                <audio controls>
+                    <source src="{{field.value}}" type="audio/wav">
+                    <source src="{{field.value}}" type="audio/mpeg">
+                    Your browser does not support the audio tag.
+                </audio>
+                {% elif field.multi_choice == "off" %}
+                {{field.value}}
+                {% else %}
+                {% for value in field.value %}
+                {{value}} &nbsp;
+                {% endfor %}
+                {% endif %}<br />
+                {% endfor %}
+                {% if post.tags.tags %}
+                {% for tag in post.tags.tags%}
+                <p class="WikiItemTag">{{tag.tag}}<span class="textboxwWikiInfo"><a href="{{tag.url}}"
+                            style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                {% endfor %}
+                {% endif %}
+                <br />
+                {{post.pub_date}}
+                <br />
+                {{post.user.username}}
+            </div>
+            {% if post.user == user.user %}
+            <div>
+            <form style="display: inline;" action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button>
+            </form>
+            <form style="display: inline;" action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button>
+            </form>
+            </div>
+            {% endif %}
+            <br /><br />
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>There is no post in this community.</p>
+    {% endif %}
 
-{% if joined %}
-<form action="{% url 'vircom:unsubscribe_community' community.pk %}"><button type='submit'>Unsubscribe</button></form>
-{% else %}
-<form action="{% url 'vircom:join_community' community.pk %}"><button type='submit'>Join</button></form>
-{% endif %}
 
-{% if data_type_object_list%}
-<ul>
-    {% for post in data_type_object_list %}
-    <li>
+    {% if joined %}
+    {% if data_type_list %}
+    {% for data_type in data_type_list %}
+    {% if not data_type.is_archived %}
+    <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">Create New
+            {{data_type.name }}</a>
+        {% if data_type.name != "Generic Post" %}
+        {% if data_type.user == user.user %}
         <div>
-            {{ post.data_type.name }}<br />
-            {% for field in post.fields.fields %}
-            <b>{{field.name}}:</b>
-            {% if field.field_type == "Image" and field.value != "-" %}
-            <img src="{{field.value}}" style="width: 320px;" />
-            {% elif field.field_type == "Video" and field.value != "-" %}
-            <video width="320" controls>
-                <source src="{{field.value}}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            {% elif field.field_type == "Audio" and field.value != "-" %}
-            <audio controls>
-                <source src="{{field.value}}" type="audio/wav">
-                <source src="{{field.value}}" type="audio/mpeg">
-                Your browser does not support the audio tag.
-            </audio>
-            {% elif field.multi_choice == "off" %}
-            {{field.value}}
-            {% else %}
-            {% for value in field.value %}
-            {{value}} &nbsp;
-            {% endfor %}
-            {% endif %}<br />
-            {% endfor %}
-            {{post.pub_date}}<br />{{post.user.username}}
+        <form style="display: inline;" action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button
+                type='submit'>Delete</button>
+        </form>
+        <form style="display: inline;" action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button>
+        </form>
         </div>
-        {% if post.user == user.user %}
-        <form action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button></form>
-        <form action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button></form>
         {% endif %}
-        <br /><br />
-    </li>
+        {% endif %}
+    </div>
+    {% endif %}
     {% endfor %}
-</ul>
-{% else %}
-<p>There is no post in this community.</p>
-{% endif %}
-
-
-{% if joined %}
-{% if data_type_list %}
-{% for data_type in data_type_list %}
-{% if not data_type.is_archived %}
-<div><a href="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">Create New {{data_type.name }}</a>
-    {% if data_type.name != "Generic Post" %}
-    {% if data_type.user == user.user %}
-    <form action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button type='submit'>Delete</button>
-    </form>
-    <form action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button>
-    </form>
     {% endif %}
     {% endif %}
-</div>
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endif %}
 
-<br /><br />
-{% if joined %}
-<div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>
-{% endif %}
+    <br /><br />
+    {% if joined %}
+    <div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>
+    {% endif %}
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <!--Load Bootstrap JavaScript-->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

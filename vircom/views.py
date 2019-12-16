@@ -647,9 +647,53 @@ def create_data_type_object(request, community_id, data_type_id):
                 "value": value
             }
         )
-    data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=f, user=request.user)
+        tags_dict = get_post_tags(request.POST['tags'])
+        if tags_dict:
+            tags = tags_dict
+        else: 
+            tags = {}    
+    data_type_object = DataTypeObject(pub_date=datetime.datetime.now(), community=community, data_type=data_type, fields=f, user=request.user, tags=tags)
     data_type_object.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))   
+
+def get_post_tags(tags):
+    tags_array  = tags.split(",")
+    tags_dict = {}
+    tags_dict['tags'] = []
+    for tag in tags_array:
+        if tag.strip() != "":
+            tags_dict['tags'].append({
+                "tag": tag.strip()
+            })
+        else:
+            return None
+    counter = 0
+    for tag in tags_dict['tags']:
+        try:
+            wiki_item = WikiItem.objects.get(label__iexact=tag["tag"])
+            tags_dict['tags'][counter]["qid"] = wiki_item.qid
+            tags_dict['tags'][counter]["label"] = wiki_item.label
+            tags_dict['tags'][counter]["description"] = wiki_item.description
+            tags_dict['tags'][counter]["url"] = wiki_item.url
+        except:
+            items = get_wiki_data_items(tag["tag"])
+            if items != []:
+                if "description" not in items[0]:
+                    items[0]["description"] = items[0]["label"]
+                wiki_item = WikiItem(qid=items[0]["id"], label=items[0]["label"], description=items[0]["description"], url=items[0]["concepturi"])
+                wiki_item.save()
+                tags_dict['tags'][counter]["qid"] = wiki_item.qid
+                tags_dict['tags'][counter]["label"] = wiki_item.label
+                tags_dict['tags'][counter]["description"] = wiki_item.description
+                tags_dict['tags'][counter]["url"] = wiki_item.url
+            else:
+                wiki_item = {"qid": "-", "label": tag["tag"], "description": "-", "url":"-"}
+                tags_dict['tags'][counter]["qid"] = wiki_item["qid"]
+                tags_dict['tags'][counter]["label"] = wiki_item["label"]
+                tags_dict['tags'][counter]["description"] = wiki_item["description"]
+                tags_dict['tags'][counter]["url"] = wiki_item["url"]     
+        counter = counter + 1
+    return tags_dict
 
     # EDIT DATA TYPE OBJECT  
 
@@ -715,16 +759,27 @@ def edit_post(request, community_name, post_id):
             "options": field_dt['options'],
             "value": "",
         })
-    post.save()    
+    post.save()  
+    tag_labels = ""  
+    if post.tags != {}:
+        for tag in post.tags['tags']:
+            tag_labels = tag_labels + tag["tag"] + ","
+        tag_labels = tag_labels[:-1]
     context = {
         'community': community,
         'post': post,
+        'tag_labels': tag_labels
     }
     return render(request, 'vircom/edit_post.html', context)
 
 def change_post(request, community_id, post_id):
     community = get_object_or_404(Community, pk=community_id)
     post = DataTypeObject.objects.get(pk=post_id)
+    tag_labels = ""  
+    if post.tags != {}:
+        for tag in post.tags['tags']:
+            tag_labels = tag_labels + tag["tag"] + ","
+        tag_labels = tag_labels[:-1]
     if not request.user.is_authenticated:
         context = {
         'community': community,   
@@ -755,6 +810,7 @@ def change_post(request, community_id, post_id):
         'data_type': data_type,
         'fields': dt_fields,
         'error_message': "You cannot leave required fields empty.",
+        'tag_labels': tag_labels
     }
     f = {}
     f['fields'] = []
@@ -812,7 +868,13 @@ def change_post(request, community_id, post_id):
                 "value": value
             }
         )
+    tags_dict = get_post_tags(request.POST['tags'])
+    if tags_dict:
+        tags = tags_dict
+    else: 
+        tags = {}        
     post.fields = f
+    post.tags = tags
     post.save()
     return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))     
 

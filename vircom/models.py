@@ -32,6 +32,7 @@ class DataTypeObject(models.Model):
     pub_date = models.DateTimeField('date published')
     community = models.ForeignKey(Community, on_delete=models.PROTECT) 
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+    tags = JSONField()
     def __str__(self):
         return self.community.name + "-" + self.data_type.name + "-" + str(self.pk) 
 
@@ -48,10 +49,10 @@ class VircomUser(models.Model):
         return self.user.username  
 
 class WikiItem(models.Model):
-    qid = models.CharField(max_length=200, unique=True) 
-    label = models.CharField(max_length=200, unique=True)
+    qid = models.CharField(max_length=200) 
+    label = models.CharField(max_length=200)
     description = models.TextField(blank = True)
-    url = models.CharField(max_length=200, unique=True)
+    url = models.CharField(max_length=200)
     def __str__(self):
         return self.label
     
