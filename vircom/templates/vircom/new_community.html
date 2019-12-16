@@ -7,8 +7,9 @@
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-    <link href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css"
+        rel="stylesheet" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
@@ -23,29 +24,50 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="CommunityName">Community Name</label>
-            <input type="text" class="form-control" id="ICommunityName" aria-describedby="CommunityName"
+            {% if community_name %}
+            <input type="text" class="form-control" id="CommunityName" aria-describedby="CommunityName"
+                placeholder="Enter community name" value="{{community_name}}" name="name">
+            {% else %}
+            <input type="text" class="form-control" id="CommunityName" aria-describedby="CommunityName"
                 placeholder="Enter community name" name="name">
+            {% endif %}
         </div>
         <div class="form-group">
             <label for="CommunityDescription">Description</label>
+            {% if description %}
             <textarea class="form-control" id="CommunityDescription" placeholder="Briefly describe your community"
                 rows="5" name="description"></textarea>
+            {% else %}
+            <textarea class="form-control" id="CommunityDescription" placeholder="Briefly describe your community"
+                rows="5" name="description"></textarea>
+            {% endif %}
         </div>
         <div class="form-group">
             <label for="CommunityDescription">Tags</label>
-            <input type="text" class="form-control" data-role="tagsinput" name="tags"/>
-            <small id="CommunityTagsHelper" class="form-text text-muted">You can seperate the tags using comma(,). e.g tag1,tag2,tag3...</small>
+            {% if tags %}
+            <input type="text" class="form-control" data-role="tagsinput" value="{{tags}}" name="tags" />
+            {% else %}
+            <input type="text" class="form-control" data-role="tagsinput" name="tags" />
+            {% endif %}
+            <small id="CommunityTagsHelper" class="form-text text-muted">You can seperate the tags using comma(,). e.g
+                tag1,tag2,tag3...</small>
         </div>
         <div class="input-group-btn">
             <button type="submit" class="btn btn-primary">Create Community</button>
-            <button class="btn btn-success" type="submit" name="get_tag" value="get_tag"
-                style="margin-left: 10px;">Get Tag Suggestions</button>
+            <button class="btn btn-success" type="submit" name="get_tag" value="get_tag" style="margin-left: 10px;">Get
+                Tag Suggestions</button>
             <button class="btn btn-danger" type="submit" name="cancel" value="cancel"
                 style="margin-left: 10px;">Cancel</button>
         </div>
     </form>
 
-
+    {% if description %}
+    <script>
+        function myFunction() {
+            document.getElementById("CommunityDescription").defaultValue = "{{description}}";
+        }
+    </script>
+    {% endif %}
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"

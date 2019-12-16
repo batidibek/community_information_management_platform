@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Community, DataType, DataTypeObject, MediaFile, VircomUser
+from .models import Community, DataType, DataTypeObject, MediaFile, VircomUser, WikiItem
 from django.http import Http404
 from django.urls import reverse
 import datetime
@@ -54,6 +54,7 @@ def create_community(request):
             'error_message': "You need to Log in or Sign up to create new community.",
         }) 
     name = str(request.POST.get('name', "")).strip()
+    description = str(request.POST.get('description', "")).strip()
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:index'))
     if "get_tag" in request.POST:
@@ -63,35 +64,59 @@ def create_community(request):
         })
         else:
             suggested_tags = suggest_tags(name)
-            counter = 0
-            for item in suggested_tags['items']: 
-                item_checker = False
-                try:
-                    old_item = Blog.objects.get(label__iexact=item["label"])
-                except:
-                    pass
+            suggested_tag_list = ""
+            if suggested_tags:
+                for item in suggested_tags["items"]:
+                    suggested_tag_list = suggested_tag_list + item["label"] + ","
+                suggested_tag_list = suggested_tag_list[:-1]
             return render(request, 'vircom/new_community.html', {
-                'community': name,
-                'tags': suggested_tags,
+                'community_name': name,
+                'tags': suggested_tag_list,
+                'description': description
             })
-    description = str(request.POST.get('description', "")).strip()
     tags = request.POST['tags']
     tags_array  = tags.split(",")
     tags_dict = {}
     tags_dict['tags'] = []
     for tag in tags_array:
-        tags_dict['tags'].append(
-            {
-            "tag": tag
-            }
-        )
-    community = Community(name=name, description=description, pub_date=datetime.datetime.now() ,tags=tags_dict, user=request.user)
-    if community.name == "" or community.description == "":
+        if tag.strip() != "":
+            tags_dict['tags'].append({
+                "tag": tag.strip()
+            })
+    community = Community(name=name, description=description, pub_date=datetime.datetime.now(), tags={}, user=request.user)
+    if community.name == "" or community.description == "" or tags_dict['tags'] == []:
         return render(request, 'vircom/new_community.html', {
             'community': community,
-            'error_message': "Name and Description fields cannot be empty.",
+            'error_message': "Name, Description or Tag fields cannot be empty.",
         })
     else:
+        counter = 0
+        for tag in tags_dict['tags']:
+            try:
+                wiki_item = WikiItem.objects.get(label__iexact=tag["tag"])
+                tags_dict['tags'][counter]["qid"] = wiki_item.qid
+                tags_dict['tags'][counter]["label"] = wiki_item.label
+                tags_dict['tags'][counter]["description"] = wiki_item.description
+                tags_dict['tags'][counter]["url"] = wiki_item.url
+            except:
+                items = get_wiki_data_items(tag["tag"])
+                if items != []:
+                    if "description" not in items[0]:
+                        items[0]["description"] = items[0]["label"]
+                    wiki_item = WikiItem(qid=items[0]["id"], label=items[0]["label"], description=items[0]["description"], url=items[0]["concepturi"])
+                    wiki_item.save()
+                    tags_dict['tags'][counter]["qid"] = wiki_item.qid
+                    tags_dict['tags'][counter]["label"] = wiki_item.label
+                    tags_dict['tags'][counter]["description"] = wiki_item.description
+                    tags_dict['tags'][counter]["url"] = wiki_item.url
+                else:
+                    wiki_item = {"qid": "-", "label": tag["tag"], "description": "-", "url":"-"}
+                    tags_dict['tags'][counter]["qid"] = wiki_item["qid"]
+                    tags_dict['tags'][counter]["label"] = wiki_item["label"]
+                    tags_dict['tags'][counter]["description"] = wiki_item["description"]
+                    tags_dict['tags'][counter]["url"] = wiki_item["url"]     
+            counter = counter + 1
+        community.tags = tags_dict
         fields = {}
         fields['fields'] = [{
                 "name": "Title",
@@ -113,7 +138,7 @@ def create_community(request):
             }
         ]
         community.save()
-        post = DataType (name="Generic Post", community=community, fields=fields, user=request.user)
+        post = DataType(name="Generic Post", community=community, fields=fields, user=request.user)
         post.save()
         vircom_user = get_object_or_404(VircomUser, user=request.user)
         vircom_user.joined_communities.append(community.pk)
@@ -125,6 +150,30 @@ def create_community(request):
 def suggest_tags(community_name):
     wiki_items = {}
     wiki_items["items"] = get_wiki_data_items(community_name)
+    tags = {}
+    tags["items"] = []
+    if wiki_items["items"] == []:
+        return None
+    counter = 0
+    deleted_keys = []
+    for item in wiki_items['items']: 
+        try:
+            WikiItem.objects.get(label__iexact=item["label"])
+        except:
+            if "description" not in item:
+                item["description"] = item["label"]
+            wiki_item = WikiItem(qid=item["id"], label=item["label"], description=item["description"], url=item["concepturi"])
+            wiki_item.save() 
+        if counter != 0:
+            for i in range(0,counter):
+                print(str(item["label"]).lower() + "    " + str(wiki_items["items"][i]["label"]).lower())
+                if str(item["label"]).lower() == str(wiki_items["items"][i]["label"]).lower():
+                    print("true")
+                    deleted_keys.append(item)
+                    break
+        counter = counter + 1 
+    for key in deleted_keys:
+        wiki_items["items"].remove(key)                  
     return wiki_items
 
 def get_wiki_data_items(search_term):
@@ -194,10 +243,12 @@ def community_detail(request, community_name):
     community = get_object_or_404(Community, name=community_name)
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    #wiki_item_list = get_wiki_item_list(community.tags)
     context = {
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
+        #'wiki_item_list': wiki_item_list,
     }
     if not request.user.is_authenticated:
         return render(request, 'vircom/community_detail.html', context)
@@ -207,6 +258,30 @@ def community_detail(request, community_name):
         if community.pk in vircom_user.joined_communities:
             context["joined"] = True
         return render(request, 'vircom/community_detail.html', context)
+
+def get_wiki_item_list(tags):
+    wiki_item_list = {}
+    wiki_item_list["items"] = []
+    for key, value in tags:
+        try:
+            wiki_item = WikiItem.objects.get(label__iexact=value)
+            item = {
+                "qid": wiki_item.qid,
+                "label": wiki_item.label,
+                "description": wiki_item.description,
+                "url": wiki_item.url
+            }
+            wiki_item_list["items"].append(item)
+        except:
+            item = {
+                "qid": "WikiData info Unavailable",
+                "label": "-",
+                "description": "-",
+                "url": "-"
+            }
+            wiki_item_list["items"].append(item)
+    return wiki_item_list
+
     
 
 #NEW DATA TYPE        
@@ -215,10 +290,12 @@ def new_data_type(request, community_name):
     community = get_object_or_404(Community, name=community_name)
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    wiki_item_list = get_wiki_item_list(community.tags)
     context = {
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
+        'wiki_item_list': wiki_item_list,
     }
     if not request.user.is_authenticated:
         context["error_message"] = "You need to Log in or Sign up to create a data type."
@@ -233,6 +310,7 @@ def new_data_type(request, community_name):
 
 def create_data_type(request, community_id):
     community = get_object_or_404(Community, pk=community_id)
+    wiki_item_list = get_wiki_item_list(community.tags)
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     name = str(request.POST.get('title', "")).strip()
@@ -248,6 +326,7 @@ def create_data_type(request, community_id):
         'community': community,   
         'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
         'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+        'wiki_item_list': wiki_item_list,
         'error_message': "You need to Log in or Sign up to join a community."
         }
         return render(request, 'vircom/community_detail.html', context)
@@ -259,6 +338,7 @@ def create_data_type(request, community_id):
                 'community': community,   
                 'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
                 'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+                'wiki_item_list': wiki_item_list,
                 'error_message': "You need to join " + community.name + " to create a data type."
             }
             return render(request, 'vircom/community_detail.html', context)
@@ -323,10 +403,12 @@ def delete_data_type(request, community_id, data_type_id):
     data_type = DataType.objects.get(pk=data_type_id)
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    wiki_item_list = get_wiki_item_list(community.tags)
     context = {
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
+        'wiki_item_list': wiki_item_list
     }
     if not request.user.is_authenticated:
         context["error_message"] = "You need to Log in or Sign up."
@@ -349,10 +431,12 @@ def edit_data_type(request, community_name, data_type_id):
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     data_type = DataType.objects.get(pk=data_type_id)
+    wiki_item_list = get_wiki_item_list(community.tags)
     context = {
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
+        'wiki_item_list': wiki_item_list
     }
     if not request.user.is_authenticated:
         context["error_message"] = "You need to Log in or Sign up."
@@ -396,6 +480,7 @@ def edit_data_type(request, community_name, data_type_id):
 def change_data_type(request, community_id, data_type_id):
     print(request.POST)
     community = get_object_or_404(Community, pk=community_id)
+    wiki_item_list = get_wiki_item_list(community.tags)
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     name = str(request.POST.get('title', "")).strip()
@@ -412,7 +497,8 @@ def change_data_type(request, community_id, data_type_id):
         'community': community,   
         'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
         'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
-        'error_message': "You need to Log in or Sign up."
+        'error_message': "You need to Log in or Sign up.",
+        'wiki_item_list': wiki_item_list
         }
         return render(request, 'vircom/community_detail.html', context)
     else:
@@ -423,6 +509,7 @@ def change_data_type(request, community_id, data_type_id):
                 'community': community,   
                 'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
                 'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+                'wiki_item_list': wiki_item_list,
                 'error_message': "You need to join " + community.name + " again to take action."
             }
             if community.pk in vircom_user.joined_communities:
@@ -488,10 +575,12 @@ def new_data_type_object(request, community_name, data_type_id):
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
     data_type = get_object_or_404(DataType, pk=data_type_id, community=community)
+    wiki_item_list = get_wiki_item_list(community.tags)
     context = {
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
+        'wiki_item_list': wiki_item_list
     }
     if not request.user.is_authenticated:
         context["error_message"] = "You need to Log in or Sign up."
@@ -514,11 +603,13 @@ def new_data_type_object(request, community_name, data_type_id):
 
 def create_data_type_object(request, community_id, data_type_id):
     community = get_object_or_404(Community, pk=community_id)
+    wiki_item_list = get_wiki_item_list(community.tags)
     if not request.user.is_authenticated:
         context = {
         'community': community,   
         'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
         'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+        'wiki_item_list': wiki_item_list,
         'error_message': "You need to Log in or Sign up."
         }
         return render(request, 'vircom/community_detail.html', context)
@@ -530,6 +621,7 @@ def create_data_type_object(request, community_id, data_type_id):
                 'community': community,   
                 'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
                 'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+                'wiki_item_list': wiki_item_list,
                 'error_message': "You can only post on the communities which you joined."
             }
             return render(request, 'vircom/community_detail.html', context)
@@ -610,10 +702,12 @@ def delete_post(request, community_id, post_id):
     post = DataTypeObject.objects.get(pk=post_id)
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    wiki_item_list = get_wiki_item_list(community.tags)
     context = {
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
+        'wiki_item_list': wiki_item_list
     }
     if not request.user.is_authenticated:
         context["error_message"] = "You need to Log in or Sign up."
@@ -634,10 +728,12 @@ def edit_post(request, community_name, post_id):
     post = DataTypeObject.objects.get(pk=post_id)
     data_type_list = DataType.objects.filter(community=community).order_by('pk')
     data_type_object_list = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    wiki_item_list = get_wiki_item_list(community.tags)
     context = {
         'community': community,
         'data_type_list':  data_type_list,
         'data_type_object_list': data_type_object_list,
+        'wiki_item_list': wiki_item_list
     }
     if not request.user.is_authenticated:
         context["error_message"] = "You need to Log in or Sign up."
@@ -676,12 +772,14 @@ def edit_post(request, community_name, post_id):
 
 def change_post(request, community_id, post_id):
     community = get_object_or_404(Community, pk=community_id)
+    wiki_item_list = get_wiki_item_list(community.tags)
     post = DataTypeObject.objects.get(pk=post_id)
     if not request.user.is_authenticated:
         context = {
         'community': community,   
         'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
         'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+        'wiki_item_list': wiki_item_list,
         'error_message': "You need to Log in or Sign up."
         }
         return render(request, 'vircom/community_detail.html', context)
@@ -693,6 +791,7 @@ def change_post(request, community_id, post_id):
                 'community': community,   
                 'data_type_list': DataType.objects.filter(community=community).order_by('pk'),
                 'data_type_object_list': DataTypeObject.objects.filter(community=community).order_by('-pub_date'),
+                'wiki_item_list': wiki_item_list,
                 'error_message': "You can only edit your own posts."
             }
             if community.pk in vircom_user.joined_communities:

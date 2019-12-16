@@ -1,27 +1,61 @@
-{% if user.user %}
-<p>Hi, {{user.user.username}}!</p>&nbsp;&nbsp;<a href="{% url 'vircom:log_out'%}">Log Out</a>
-{% else %}
-<a href="{% url 'vircom:log_in'%}">Log In</a>&nbsp;&nbsp;<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
-{% endif %}
-{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
-<br /><br /><br />
-{% if community_list %}
-<ul>
-    {% for community in community_list %}
-    <li>
-        <div>
-            <a href="{% url 'vircom:community_detail' community.name %}">{{ community.name}}</a><br/>
-            {{community.description}}<br/>
-            {% for tag in community.tags.tags%}{{tag.tag}}  {% endfor %}<br/><br/><br/>
-        </div>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No communities are available.</p>
-{% endif %}
+<!DOCTYPE html>
+<html>
 
-<br /><br /><br />
-{% if user.user %}
-<a href="{% url 'vircom:new_community'%}">Create New Community</a>
-{% endif %}
+<head>
+    <!--    Load Bootstrap via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css"
+        rel="stylesheet" />
+    {% load static %}
+    <link href="{% static 'vircom/css/text_boxes.css' %}" rel="stylesheet"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+
+<body style="width: 1000px">
+
+    {% if user.user %}
+    <p>Hi, {{user.user.username}}!</p>&nbsp;&nbsp;<a href="{% url 'vircom:log_out'%}">Log Out</a>
+    {% else %}
+    <a href="{% url 'vircom:log_in'%}">Log In</a>&nbsp;&nbsp;<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
+    {% endif %}
+    {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
+    <br /><br /><br />
+    {% if community_list %}
+    <ul>
+        {% for community in community_list %}
+        <li>
+            <div>
+                <a href="{% url 'vircom:community_detail' community.name %}">{{ community.name}}</a><br />
+                {{community.description}}<br />
+                <div class="input-group">{% for tag in community.tags.tags%}<p class="WikiItemTag">{{tag.tag}}<span
+                    class="textboxwWikiInfo"><a href="{{tag.url}}" style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>{% endfor %}</div><br /><br /><br />
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No communities are available.</p>
+    {% endif %}
+
+    <br /><br /><br />
+    {% if user.user %}
+    <a href="{% url 'vircom:new_community'%}">Create New Community</a>
+    {% endif %}
+
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <!--Load Bootstrap JavaScript-->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
