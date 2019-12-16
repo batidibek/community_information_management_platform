@@ -7,6 +7,8 @@
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css" rel="stylesheet"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
@@ -31,11 +33,16 @@
         </div>
         <div class="form-group">
             <label for="CommunityDescription">Tags</label>
-            <input type="text" class="form-control" id="CommunityTags" aria-describedby="CommunityTags"
-                placeholder="Provide tags for your community" name="tags">
+            <input type="text" class="form-control" data-role="tagsinput" name="tags"/>
             <small id="CommunityTagsHelper" class="form-text text-muted">You can seperate the tags using comma(,). e.g tag1,tag2,tag3...</small>
         </div>
-        <button type="submit" class="btn btn-primary">Create Community</button>
+        <div class="input-group-btn">
+            <button type="submit" class="btn btn-primary">Create Community</button>
+            <button class="btn btn-success" type="submit" name="get_tag" value="get_tag"
+                style="margin-left: 10px;">Get Tag Suggestions</button>
+            <button class="btn btn-danger" type="submit" name="cancel" value="cancel"
+                style="margin-left: 10px;">Cancel</button>
+        </div>
     </form>
 
 

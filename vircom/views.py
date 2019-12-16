@@ -15,6 +15,7 @@ from django.http import JsonResponse
 from django.core.files import File
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+import requests
 
 # HOMEPAGE
 
@@ -47,11 +48,32 @@ def new_community(request):
 
 def create_community(request):
     if not request.user.is_authenticated:
+        community_list = Community.objects.order_by('-pub_date')[:30]
         return render(request, 'vircom/index.html', {
             'community_list': community_list,
             'error_message': "You need to Log in or Sign up to create new community.",
         }) 
     name = str(request.POST.get('name', "")).strip()
+    if "cancel" in request.POST:
+        return HttpResponseRedirect(reverse('vircom:index'))
+    if "get_tag" in request.POST:
+        if name == "":
+            return render(request, 'vircom/new_community.html', {
+            'error_message': "You need to enter community name to get tag suggestions.",
+        })
+        else:
+            suggested_tags = suggest_tags(name)
+            counter = 0
+            for item in suggested_tags['items']: 
+                item_checker = False
+                try:
+                    old_item = Blog.objects.get(label__iexact=item["label"])
+                except:
+                    pass
+            return render(request, 'vircom/new_community.html', {
+                'community': name,
+                'tags': suggested_tags,
+            })
     description = str(request.POST.get('description', "")).strip()
     tags = request.POST['tags']
     tags_array  = tags.split(",")
@@ -97,6 +119,27 @@ def create_community(request):
         vircom_user.joined_communities.append(community.pk)
         vircom_user.save()
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
+
+# GET WIKIDATA TAGS
+
+def suggest_tags(community_name):
+    wiki_items = {}
+    wiki_items["items"] = get_wiki_data_items(community_name)
+    return wiki_items
+
+def get_wiki_data_items(search_term):
+    url = "https://www.wikidata.org/w/api.php"
+    params = {
+    "action": "wbsearchentities",
+    "format": "json",
+    "language": "en",
+    "limit": "10",
+    "search": search_term
+    }
+    response = requests.get(url=url, params=params)
+    data = response.json()
+    return data["search"]
+
 
 # JOIN COMMUNITY        
 
@@ -528,8 +571,14 @@ def create_data_type_object(request, community_id, data_type_id):
                 value = "-"
             else: 
                 media_file = MediaFile(upload=user_file, url="")
-                media_file.url = media_file.upload.name
-                print(media_file.url)
+                media_url = list(media_file.upload.name)
+                counter = 0
+                for key in media_url:
+                    if key == " ":
+                        media_url[counter] = "_"
+                    counter = counter + 1    
+                media_url = ''.join(media_url)    
+                media_file.url = media_url
                 media_file.save()
                 value = "/media/uploads/" + media_file.url
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
@@ -687,8 +736,14 @@ def change_post(request, community_id, post_id):
                 value = "-"
             else: 
                 media_file = MediaFile(upload=user_file, url="")
-                media_file.url = media_file.upload.name
-                print(media_file.url)
+                media_url = list(media_file.upload.name)
+                counter = 0
+                for key in media_url:
+                    if key == " ":
+                        media_url[counter] = "_"
+                    counter = counter + 1    
+                media_url = ''.join(media_url)    
+                media_file.url = media_url
                 media_file.save()
                 value = "/media/uploads/" + media_file.url
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":

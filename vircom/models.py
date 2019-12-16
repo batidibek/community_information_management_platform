@@ -45,7 +45,14 @@ class VircomUser(models.Model):
     #data_types = ArrayField(models.IntegerField())
     #posts = ArrayField(models.IntegerField())
     def __str__(self):
-        return self.user.username   
-    
+        return self.user.username  
+
+class WikiItem(models.Model):
+    qid = models.CharField(max_length=200, unique=True) 
+    label = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank = True)
+    url = models.CharField(max_length=200, unique=True)
+    def __str__(self):
+        return self.label
     
 
