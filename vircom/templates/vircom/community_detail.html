@@ -116,6 +116,7 @@
         </form>
         <form style="display: inline;" action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button>
         </form>
+        <button data-toggle="modal" data-target="#searchModal" type='button'>Search</button>
         </div>
         {% endif %}
         {% endif %}
@@ -129,6 +130,31 @@
     {% if joined %}
     <div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>
     {% endif %}
+
+    <!-- Modal -->
+  <div class="modal fade" id="searchModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Modal Header</h4>
+        </div>
+        <div class="modal-body">
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+
+
+
 
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

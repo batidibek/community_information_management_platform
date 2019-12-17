@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Community, DataType, DataTypeObject, MediaFile, VircomUser, WikiItem
+from .models import Community, DataType, DataTypeObject, MediaFile, VircomUser
 from django.http import Http404
 from django.urls import reverse
 import datetime
@@ -55,12 +55,23 @@ def create_community(request):
         }) 
     name = str(request.POST.get('name', "")).strip()
     description = str(request.POST.get('description', "")).strip()
+    try:
+        old_community = Community.objects.get(name=name)
+    except:
+        old_community = None
+    if old_community:
+        return render(request, 'vircom/new_community.html', {
+            'error_message': "There is another community named " + name,
+            'description': description
+        })
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:index'))
     if "get_tag" in request.POST:
         if name == "":
             return render(request, 'vircom/new_community.html', {
             'error_message': "You need to enter community name to get tag suggestions.",
+            'tags': suggested_tag_list,
+            'description': description
         })
         else:
             suggested_tags = suggest_tags(name)
@@ -74,49 +85,20 @@ def create_community(request):
                 'tags': suggested_tag_list,
                 'description': description
             })
-    tags = request.POST['tags']
-    tags_array  = tags.split(",")
-    tags_dict = {}
-    tags_dict['tags'] = []
-    for tag in tags_array:
-        if tag.strip() != "":
-            tags_dict['tags'].append({
-                "tag": tag.strip()
-            })
     community = Community(name=name, description=description, pub_date=datetime.datetime.now(), tags={}, user=request.user)
-    if community.name == "" or community.description == "" or tags_dict['tags'] == []:
+    if community.name == "" or community.description == "" or request.POST['tags'] == "":
         return render(request, 'vircom/new_community.html', {
             'community': community,
             'error_message': "Name, Description or Tag fields cannot be empty.",
+            'description': description
         })
     else:
-        counter = 0
-        for tag in tags_dict['tags']:
-            try:
-                wiki_item = WikiItem.objects.get(label__iexact=tag["tag"])
-                tags_dict['tags'][counter]["qid"] = wiki_item.qid
-                tags_dict['tags'][counter]["label"] = wiki_item.label
-                tags_dict['tags'][counter]["description"] = wiki_item.description
-                tags_dict['tags'][counter]["url"] = wiki_item.url
-            except:
-                items = get_wiki_data_items(tag["tag"])
-                if items != []:
-                    if "description" not in items[0]:
-                        items[0]["description"] = items[0]["label"]
-                    wiki_item = WikiItem(qid=items[0]["id"], label=items[0]["label"], description=items[0]["description"], url=items[0]["concepturi"])
-                    wiki_item.save()
-                    tags_dict['tags'][counter]["qid"] = wiki_item.qid
-                    tags_dict['tags'][counter]["label"] = wiki_item.label
-                    tags_dict['tags'][counter]["description"] = wiki_item.description
-                    tags_dict['tags'][counter]["url"] = wiki_item.url
-                else:
-                    wiki_item = {"qid": "-", "label": tag["tag"], "description": "-", "url":"-"}
-                    tags_dict['tags'][counter]["qid"] = wiki_item["qid"]
-                    tags_dict['tags'][counter]["label"] = wiki_item["label"]
-                    tags_dict['tags'][counter]["description"] = wiki_item["description"]
-                    tags_dict['tags'][counter]["url"] = wiki_item["url"]     
-            counter = counter + 1
-        community.tags = tags_dict
+        tags_dict = get_post_tags(request.POST['tags'])
+        if tags_dict:
+            tags = tags_dict
+        else: 
+            tags = {}    
+        community.tags = tags
         fields = {}
         fields['fields'] = [{
                 "name": "Title",
@@ -149,7 +131,7 @@ def create_community(request):
 
 def suggest_tags(community_name):
     wiki_items = {}
-    wiki_items["items"] = get_wiki_data_items(community_name)
+    wiki_items["items"] = get_wiki_data_items(community_name, 10)
     tags = {}
     tags["items"] = []
     if wiki_items["items"] == []:
@@ -157,13 +139,6 @@ def suggest_tags(community_name):
     counter = 0
     deleted_keys = []
     for item in wiki_items['items']: 
-        try:
-            WikiItem.objects.get(label__iexact=item["label"])
-        except:
-            if "description" not in item:
-                item["description"] = item["label"]
-            wiki_item = WikiItem(qid=item["id"], label=item["label"], description=item["description"], url=item["concepturi"])
-            wiki_item.save() 
         if counter != 0:
             for i in range(0,counter):
                 print(str(item["label"]).lower() + "    " + str(wiki_items["items"][i]["label"]).lower())
@@ -176,13 +151,13 @@ def suggest_tags(community_name):
         wiki_items["items"].remove(key)                  
     return wiki_items
 
-def get_wiki_data_items(search_term):
+def get_wiki_data_items(search_term, limit):
     url = "https://www.wikidata.org/w/api.php"
     params = {
     "action": "wbsearchentities",
     "format": "json",
     "language": "en",
-    "limit": "10",
+    "limit": limit,
     "search": search_term
     }
     response = requests.get(url=url, params=params)
@@ -669,29 +644,20 @@ def get_post_tags(tags):
             return None
     counter = 0
     for tag in tags_dict['tags']:
-        try:
-            wiki_item = WikiItem.objects.get(label__iexact=tag["tag"])
-            tags_dict['tags'][counter]["qid"] = wiki_item.qid
-            tags_dict['tags'][counter]["label"] = wiki_item.label
-            tags_dict['tags'][counter]["description"] = wiki_item.description
-            tags_dict['tags'][counter]["url"] = wiki_item.url
-        except:
-            items = get_wiki_data_items(tag["tag"])
-            if items != []:
-                if "description" not in items[0]:
-                    items[0]["description"] = items[0]["label"]
-                wiki_item = WikiItem(qid=items[0]["id"], label=items[0]["label"], description=items[0]["description"], url=items[0]["concepturi"])
-                wiki_item.save()
-                tags_dict['tags'][counter]["qid"] = wiki_item.qid
-                tags_dict['tags'][counter]["label"] = wiki_item.label
-                tags_dict['tags'][counter]["description"] = wiki_item.description
-                tags_dict['tags'][counter]["url"] = wiki_item.url
-            else:
-                wiki_item = {"qid": "-", "label": tag["tag"], "description": "-", "url":"-"}
-                tags_dict['tags'][counter]["qid"] = wiki_item["qid"]
-                tags_dict['tags'][counter]["label"] = wiki_item["label"]
-                tags_dict['tags'][counter]["description"] = wiki_item["description"]
-                tags_dict['tags'][counter]["url"] = wiki_item["url"]     
+        items = get_wiki_data_items(tag["tag"], 1)
+        if items != []:
+            if "description" not in items[0]:
+                items[0]["description"] = items[0]["label"]
+            tags_dict['tags'][counter]["qid"] = items[0]["id"]
+            tags_dict['tags'][counter]["label"] = items[0]["label"]
+            tags_dict['tags'][counter]["description"] = items[0]["description"]
+            tags_dict['tags'][counter]["url"] = items[0]["concepturi"]
+        else:
+            wiki_item = {"id": "-", "label": tag["tag"], "description": "-", "url":"-"}
+            tags_dict['tags'][counter]["qid"] = wiki_item["id"]
+            tags_dict['tags'][counter]["label"] = wiki_item["label"]
+            tags_dict['tags'][counter]["description"] = wiki_item["description"]
+            tags_dict['tags'][counter]["url"] = wiki_item["url"]     
         counter = counter + 1
     return tags_dict
 
@@ -804,7 +770,7 @@ def change_post(request, community_id, post_id):
     if "cancel" in request.POST:
         return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     data_type = post.data_type
-    dt_fields = data_type.fields
+    dt_fields = post.fields
     error_context = {
         'community': community,
         'data_type': data_type,
@@ -835,21 +801,18 @@ def change_post(request, community_id, post_id):
             except KeyError:
                 user_file = ""
             if user_file == "" and dt_field['required'] == "Yes":
-                return render(request, 'vircom/new_data_type_object.html', error_context) 
+                post_url = dt_field["value"][15:]
+                media_file_list = MediaFile.objects.filter(url=post_url).order_by("-pk")
+                media_file = media_file_list[0]  
+                value = "/media/" + str(media_file)
             elif user_file == "" and dt_field['required'] == "No":
                 value = "-"
             else: 
                 media_file = MediaFile(upload=user_file, url="")
-                media_url = list(media_file.upload.name)
-                counter = 0
-                for key in media_url:
-                    if key == " ":
-                        media_url[counter] = "_"
-                    counter = counter + 1    
-                media_url = ''.join(media_url)    
-                media_file.url = media_url
+                print(str(media_file))
+                media_file.url = "/media/" + str(media_file)
                 media_file.save()
-                value = "/media/uploads/" + media_file.url
+                value = media_file.url
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
             return render(request, 'vircom/new_data_type_object.html', error_context) 
         else:
@@ -972,4 +935,16 @@ def log_out(request):
     logout(request)
     return HttpResponseRedirect(reverse('vircom:index'))    
 
+# ADVANCED SEARCH
 
+def advanced_search(request, community_name, data_type_id):
+    community = get_object_or_404(Community, name=community_name)
+    data_type = get_object_or_404(Community, pk=data_type_name)
+    context = {
+        'community': community,
+        'data_type': data_type
+    }
+    return render(request, 'vircom/advanced_search.html', context) 
+
+def make_advanced_search(request, community_id, data_type_id):
+    pass

@@ -39,6 +39,8 @@ class DataTypeObject(models.Model):
 class MediaFile(models.Model):
     upload = models.FileField(upload_to='uploads')
     url = models.TextField(blank = True)
+    def __str__(self):
+        return str(self.upload)
 
 class VircomUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -48,12 +50,6 @@ class VircomUser(models.Model):
     def __str__(self):
         return self.user.username  
 
-class WikiItem(models.Model):
-    qid = models.CharField(max_length=200) 
-    label = models.CharField(max_length=200)
-    description = models.TextField(blank = True)
-    url = models.CharField(max_length=200)
-    def __str__(self):
-        return self.label
+
     
 

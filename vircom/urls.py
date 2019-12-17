@@ -14,6 +14,7 @@ urlpatterns = [
     path('<str:community_name>/<str:data_type_id>/edit', views.edit_data_type, name='edit_data_type'),
     path('sign-up/', views.sign_up, name='sign_up'),
     path('log-in/', views.log_in, name='log_in'),
+    path('<str:community_name>/<str:data_type_id>/search', views.advanced_search, name='advanced_search'),
     
     #REQUESTS
     path('<str:community_id>/<str:post_id>/delete-post/', views.delete_post, name='delete_post'),
@@ -28,4 +29,5 @@ urlpatterns = [
     path('log-out/', views.log_out, name='log_out'),
     path('<str:community_id>/join', views.join_community, name='join_community'),
     path('<str:community_id>/unsubscribe', views.unsubscribe_community, name='unsubscribe_community'),
+    path('<str:community_id>/<str:data_type_id>/search', views.make_advanced_search, name='make_advanced_search'),
 ]
