@@ -594,16 +594,10 @@ def create_data_type_object(request, community_id, data_type_id):
                 value = "-"
             else: 
                 media_file = MediaFile(upload=user_file, url="")
-                media_url = list(media_file.upload.name)
-                counter = 0
-                for key in media_url:
-                    if key == " ":
-                        media_url[counter] = "_"
-                    counter = counter + 1    
-                media_url = ''.join(media_url)    
-                media_file.url = media_url
                 media_file.save()
-                value = "/media/uploads/" + media_file.url
+                media_file.url = "/media/" + str(media_file.upload)
+                media_file.save()
+                value = media_file.url
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
             return render(request, 'vircom/new_data_type_object.html', error_context) 
         else:
@@ -775,6 +769,7 @@ def change_post(request, community_id, post_id):
         'community': community,
         'data_type': data_type,
         'fields': dt_fields,
+        'post': post,
         'error_message': "You cannot leave required fields empty.",
         'tag_labels': tag_labels
     }
@@ -801,16 +796,13 @@ def change_post(request, community_id, post_id):
             except KeyError:
                 user_file = ""
             if user_file == "" and dt_field['required'] == "Yes":
-                post_url = dt_field["value"][15:]
-                media_file_list = MediaFile.objects.filter(url=post_url).order_by("-pk")
-                media_file = media_file_list[0]  
-                value = "/media/" + str(media_file)
+                value = dt_field["value"]
             elif user_file == "" and dt_field['required'] == "No":
                 value = "-"
             else: 
                 media_file = MediaFile(upload=user_file, url="")
-                print(str(media_file))
-                media_file.url = "/media/" + str(media_file)
+                media_file.save()
+                media_file.url = "/media/" + str(media_file.upload)
                 media_file.save()
                 value = media_file.url
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
