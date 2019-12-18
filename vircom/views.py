@@ -929,14 +929,6 @@ def log_out(request):
 
 # ADVANCED SEARCH
 
-def advanced_search(request, community_name, data_type_id):
-    community = get_object_or_404(Community, name=community_name)
-    data_type = get_object_or_404(Community, pk=data_type_name)
-    context = {
-        'community': community,
-        'data_type': data_type
-    }
-    return render(request, 'vircom/advanced_search.html', context) 
-
-def make_advanced_search(request, community_id, data_type_id):
-    pass
+def advanced_search(request, community_id, data_type_id):
+    print(request.POST)
+    #TODO write advanced search function

@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css"
         rel="stylesheet" />
@@ -14,7 +14,7 @@
     <link href="{% static 'vircom/css/text_boxes.css' %}" rel="stylesheet">
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
 
 <body style="width: 1000px">
@@ -26,20 +26,24 @@
     {% endif %}
 
     <a style="display: inline;" href="{% url 'vircom:index' %}">Homepage</a>
-    
+
     <br /><br /><br />
     <h1 style="display: inline;">{{ community.name }}</h1>
-    
+
 
     {% if joined %}
-    <form style="display: inline;" action="{% url 'vircom:unsubscribe_community' community.pk %}"><button style="margin-bottom: 18px;" type='submit' class="btn btn-danger">Unsubscribe</button>
+    <form style="display: inline;" action="{% url 'vircom:unsubscribe_community' community.pk %}"><button
+            style="margin-bottom: 18px;" type='submit' class="btn btn-danger">Unsubscribe</button>
     </form>
     {% else %}
-    <form style="display: inline;" action="{% url 'vircom:join_community' community.pk %}"><button type='submit' style="margin-bottom: 18px;" class="btn btn-primary">Join</button></form>
+    <form style="display: inline;" action="{% url 'vircom:join_community' community.pk %}"><button type='submit'
+            style="margin-bottom: 18px;" class="btn btn-primary">Join</button></form>
     {% endif %}
     <br />
     <div class="input-group">{% for tag in community.tags.tags%}<p class="WikiItemTag">{{tag.tag}}<span
-        class="textboxwWikiInfo"><a href="{{tag.url}}" style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>&nbsp;&nbsp;&nbsp;&nbsp;{% endfor %}
+                class="textboxwWikiInfo"><a href="{{tag.url}}"
+                    style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>
+        &nbsp;&nbsp;&nbsp;&nbsp;{% endfor %}
     </div>
 
 
@@ -87,10 +91,12 @@
             </div>
             {% if post.user == user.user %}
             <div>
-            <form style="display: inline;" action="{% url 'vircom:delete_post' community.id post.pk %}"><button type='submit'>Delete</button>
-            </form>
-            <form style="display: inline;" action="{% url 'vircom:edit_post' community.name post.pk %}"><button type='submit'>Edit</button>
-            </form>
+                <form style="display: inline;" action="{% url 'vircom:delete_post' community.id post.pk %}"><button
+                        type='submit'>Delete</button>
+                </form>
+                <form style="display: inline;" action="{% url 'vircom:edit_post' community.name post.pk %}"><button
+                        type='submit'>Edit</button>
+                </form>
             </div>
             {% endif %}
             <br /><br />
@@ -102,58 +108,178 @@
     {% endif %}
 
 
-    {% if joined %}
     {% if data_type_list %}
     {% for data_type in data_type_list %}
     {% if not data_type.is_archived %}
-    <div><a href="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">Create New
-            {{data_type.name }}</a>
-        {% if data_type.name != "Generic Post" %}
-        {% if data_type.user == user.user %}
-        <div>
-        <form style="display: inline;" action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}"><button
-                type='submit'>Delete</button>
-        </form>
-        <form style="display: inline;" action="{% url 'vircom:edit_data_type' community.name data_type.id %}"><button type='submit'>Edit</button>
-        </form>
-        <button data-toggle="modal" data-target="#searchModal" type='button'>Search</button>
+    <div>
+        <p style="display: inline; font-weight: bold;">{{data_type.name }}</p>
+
+        <div style="display: inline;">
+            {% if joined %}
+            <form style="display: inline;" action="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">
+                <button type='submit'>Create</button>
+            </form>
+            {% endif %}
+            {% if data_type.name != "Generic Post" %}
+            {% if data_type.user == user.user %}
+            <form style="display: inline;" action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}">
+                <button type='submit'>Delete</button>
+            </form>
+            <form style="display: inline;" action="{% url 'vircom:edit_data_type' community.name data_type.pk %}">
+                <button type='submit'>Edit</button>
+            </form>
+            {% endif %}
+            {% endif %}
+            <button data-toggle="modal" data-target="#searchModal{{data_type.pk}}" type='button'>Search</button>
         </div>
-        {% endif %}
-        {% endif %}
+        </br>
     </div>
+    </br>
+    <!-- Modal -->
+    <div class="modal fade" id="searchModal{{data_type.pk}}" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content" style="width: 750px;">
+                <div class="modal-header">
+                    <h4 class="modal-title">Search for {{data_type.name}}</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+
+                    <form action="{% url 'vircom:advanced_search' community.id data_type.pk %}" method="post"
+                        novalidate>
+                        {% csrf_token %}
+                        {% for field in data_type.fields.fields %}
+                        <!-- Field Name -->
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-2 nopadding">
+                                    <div class="form-group">
+                                        <p style="display: inline; font-weight: bold;">{{field.name }}</p>
+                                        <input type="hidden" id="fieldName" name="field_name" value="{{field.name}}">
+                                    </div>
+                                </div>
+                                <!-- Match Condition -->
+                                {% if field.enumerated == "Yes" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type"
+                                            disabled="disabled">
+                                            <option>equals</option>
+                                        </select>
+                                        <input type="hidden" id="selectMatchType" name="match_type" value="equals">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>equals</option>
+                                            <option>contains</option>
+                                            <option>not contains</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Date" or field.field_type == "Time" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>is</option>
+                                            <option>later than</option>
+                                            <option>before than</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type"
+                                            disabled="disabled">
+                                            <option selected>Unavailable</option>
+                                        </select>
+                                        <input type="hidden" id="selectMatchType" name="match_type" value="Unavailable">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>equals</option>
+                                            <option>more than</option>
+                                            <option>less than</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <!-- Search Value -->
+                                {% if field.enumerated == "Yes" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="searchValue" name="value">
+                                            <option>[Leave Empty]</option>
+                                            {% for option in field.options %}
+                                            <option>{{option}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Date" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="date" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Time" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="time" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="searchValue" name="value" disabled="disabled">
+                                            <option selected>Unavailable</option>
+                                        </select>
+                                        <input type="hidden" id="searchValue" name="value" value="Unavailable">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="number" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-default">Search</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <!-- Modal -->
     {% endif %}
     {% endfor %}
-    {% endif %}
     {% endif %}
 
     <br /><br />
     {% if joined %}
     <div><a href="{% url 'vircom:new_data_type' community.name%}">Create New Data Type</a></div>
     {% endif %}
-
-    <!-- Modal -->
-  <div class="modal fade" id="searchModal" role="dialog">
-    <div class="modal-dialog">
-    
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Modal Header</h4>
-        </div>
-        <div class="modal-body">
-          
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-      
-    </div>
-  </div>
-
-
-
 
 
     <!-- Include jQuery -->
