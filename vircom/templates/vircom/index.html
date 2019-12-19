@@ -58,9 +58,11 @@
   </nav>
   <!--    NAVBAR -->
   <br /><br /><br /><br />
+  <div class="container" style="width: 800px; margin:0 auto;">
+  {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>
+  {% endif %}
 
   <!--    COMMUNITY LIST -->
-  <div class="container" style="width: 800px; margin:0 auto;">
     {% if community_list %}
     <ul class="list-group">
       {% for community in community_list %}
