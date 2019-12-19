@@ -6,28 +6,59 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <link href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css"
-        rel="stylesheet" />
     {% load static %}
     <link href="{% static 'vircom/css/text_boxes.css' %}" rel="stylesheet">
-    </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
 </head>
 
-<body style="width: 1000px">
+<body>
+    <!--    NAVBAR -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'vircom:index' %}">VirCom</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-    {% if user.user %}
-    <p>Hi, {{user.user.username}}!</p>&nbsp;&nbsp;<a href="{% url 'vircom:log_out'%}">Log Out</a>
-    {% else %}
-    <a href="{% url 'vircom:log_in'%}">Log In</a>&nbsp;&nbsp;<a href="{% url 'vircom:sign_up'%}">Sign Up</a>
-    {% endif %}
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'vircom:index' %}">Home<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:new_community'%}">New Community</a>
+                </li>
+            </ul>
+            <div style="float: right;">
+                <form class="form-inline my-2 my-lg-0">
+                    <input style="width: 250px;" class="form-control mr-sm-2" type="search"
+                        placeholder="Search Community" aria-label="Search Community">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+            </div>
+            <ul class="navbar-nav" style="float: right;">
+                {% if user.user %}
+                <li class="nav-item">
+                    <a class="nav-link disabled">Hi, {{user.user.username}}!</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:log_out'%}">Log Out</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:log_in'%}">Log In</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:sign_up'%}">Sign Up</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <!--    NAVBAR -->
+    <br /><br /><br /><br />
 
-    <a style="display: inline;" href="{% url 'vircom:index' %}">Homepage</a>
-
-    <br /><br /><br />
     <h1 style="display: inline;">{{ community.name }}</h1>
 
 
@@ -283,11 +314,16 @@
     {% endif %}
 
 
-    <!-- Include jQuery -->
+    <!--    FOOTER -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="height: 50px;"></nav>
+    <!--    FOOTER -->
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
-    <!--Load Bootstrap JavaScript-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
