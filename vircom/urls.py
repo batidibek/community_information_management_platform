@@ -29,4 +29,5 @@ urlpatterns = [
     path('<str:community_id>/join', views.join_community, name='join_community'),
     path('<str:community_id>/unsubscribe', views.unsubscribe_community, name='unsubscribe_community'),
     path('<str:community_id>/<str:data_type_id>/search', views.advanced_search, name='advanced_search'),
+    path('community-search/', views.search_community, name='search_community'),
 ]

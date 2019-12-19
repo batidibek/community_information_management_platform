@@ -33,6 +33,10 @@ def index(request):
         }
     return render(request, 'vircom/index.html', context)
 
+# SEARCH COMMUNITY
+
+def search_community(request, search_term)
+
 # NEW COMMUNITY    
 
 def new_community(request):    
@@ -43,7 +47,8 @@ def new_community(request):
             'error_message': "You need to Log in or Sign up to create new community.",
         })
     else:   
-        return render(request, 'vircom/new_community.html')
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        return render(request, 'vircom/new_community.html', {'user': vircom_user})
 
 
 def create_community(request):
@@ -276,6 +281,7 @@ def create_data_type(request, community_id):
         return render(request, 'vircom/community_detail.html', context)
     else:
         vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
         if community.pk not in vircom_user.joined_communities:
             context = {
                 'user': vircom_user,
@@ -382,7 +388,7 @@ def edit_data_type(request, community_name, data_type_id):
         return render(request, 'vircom/community_detail.html', context)
     else:
         vircom_user = get_object_or_404(VircomUser, user=request.user)
-        context["user"] = vircom_user
+        context['user'] = vircom_user
         if data_type.user != vircom_user.user or data_type.name == "Generic Post" or community.pk not in vircom_user.joined_communities:
             context["error_message"] = "You need to join " + community.name + " again to take action."
             if community.pk in vircom_user.joined_communities:
@@ -406,6 +412,7 @@ def edit_data_type(request, community_name, data_type_id):
                 })
     print(option_counter)            
     context = {
+        'user': vircom_user,
         'community': community,
         'data_type': data_type,
         'field_list': field_list,
@@ -440,6 +447,7 @@ def change_data_type(request, community_id, data_type_id):
         return render(request, 'vircom/community_detail.html', context)
     else:
         vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
         if data_type.user != vircom_user.user or data_type.name == "Generic Post" or community.pk not in vircom_user.joined_communities:
             context = {
                 'user': vircom_user,
@@ -529,6 +537,7 @@ def new_data_type_object(request, community_name, data_type_id):
             return HttpResponseRedirect(reverse('vircom:community_detail', args=(community.name,)))
     fields = data_type.fields
     context = {
+        'user': vircom_user,
         'community': community,
         'data_type': data_type,
         'fields': fields
@@ -561,6 +570,7 @@ def create_data_type_object(request, community_id, data_type_id):
     data_type = get_object_or_404(DataType, pk=data_type_id)
     dt_fields = data_type.fields
     error_context = {
+        'user': vircom_user,
         'community': community,
         'data_type': data_type,
         'fields': dt_fields,
@@ -734,6 +744,7 @@ def edit_post(request, community_name, post_id):
             tag_labels = tag_labels + tag["tag"] + ","
         tag_labels = tag_labels[:-1]
     context = {
+        'user': vircom_user,
         'community': community,
         'post': post,
         'tag_labels': tag_labels
@@ -774,6 +785,7 @@ def change_post(request, community_id, post_id):
     data_type = post.data_type
     dt_fields = post.fields
     error_context = {
+        'user': vircom_user,
         'community': community,
         'data_type': data_type,
         'fields': dt_fields,

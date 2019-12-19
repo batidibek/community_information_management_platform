@@ -26,15 +26,17 @@
         <li class="nav-item active">
           <a class="nav-link" href="{% url 'vircom:index' %}">Home<span class="sr-only">(current)</span></a>
         </li>
+        {% if user.user %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'vircom:new_community'%}">New Community</a>
         </li>
+        {% endif %}
       </ul>
       <div style="float: right;">
-        <form class="form-inline my-2 my-lg-0">
+        <form class="form-inline my-2 my-lg-0" action="{% url 'vircom:search_community' %}" method="post">
           <input style="width: 250px;" class="form-control mr-sm-2" type="search" placeholder="Search Community"
-            aria-label="Search Community">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            aria-label="Search Community" name="search_term">
+          <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">Search</button>
         </form>
       </div>
       <ul class="navbar-nav" style="float: right;">
@@ -82,10 +84,11 @@
     <p>No communities are available.</p>
     {% endif %}
   </div>
+  <br /><br />
   <!--    COMMUNITY LIST -->
 
   <!--    FOOTER -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light" style="height: 50px;"></nav>
+  <nav class="navbar fixed-bottom navbar-expand-lg navbar-light bg-light" style="height: 25px;"></nav>
   <!--    FOOTER -->
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

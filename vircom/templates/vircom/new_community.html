@@ -27,18 +27,12 @@
                     <a class="nav-link" href="{% url 'vircom:index' %}">Home</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'vircom:new_community'%}">New Community<span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="{% url 'vircom:new_community'%}">New Community<span
+                            class="sr-only">(current)</span></a>
                 </li>
             </ul>
-            <div style="float: right;">
-                <form class="form-inline my-2 my-lg-0">
-                    <input style="width: 250px;" class="form-control mr-sm-2" type="search"
-                        placeholder="Search Community" aria-label="Search Community">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                </form>
-            </div>
             <ul class="navbar-nav" style="float: right;">
-                {% if user.user %}
+                {% if user.user.username %}
                 <li class="nav-item">
                     <a class="nav-link disabled">Hi, {{user.user.username}}!</a>
                 </li>
@@ -63,6 +57,7 @@
         <h3>Create a new community</h3>
         {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}
 
+        <!--    FORM -->
         <form action="{% url 'vircom:create_community'%}" method="post">
             {% csrf_token %}
             <div class="form-group">
@@ -105,7 +100,13 @@
                     style="margin-left: 10px;">Cancel</button>
             </div>
         </form>
-    </divclass="container" style="width: 800px; margin:0 auto;">
+        <!--    FORM -->
+    </div>
+    </br>
+
+    <!--    FOOTER -->
+    <nav class="navbar fixed-bottom navbar-expand-lg navbar-light bg-light" style="height: 25px;"></nav>
+    <!--    FOOTER -->
 
     {% if description %}
     <script>
@@ -114,10 +115,6 @@
         }
     </script>
     {% endif %}
-
-    <!--    FOOTER -->
-    <nav class="navbar fixed-bottom navbar-expand-lg navbar-light bg-light" style="height: 50px;"></nav>
-    <!--    FOOTER -->
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
