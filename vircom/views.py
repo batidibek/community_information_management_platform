@@ -493,24 +493,24 @@ def change_data_type(request, community_id, data_type_id):
     for dt in data_type_list:
         if dt.name == name and dt.name != data_type.name:
             context["error_message"] = "There is a data type called " + name + " in this community."
-            return render(request, 'vircom/new_data_type.html', context)
+            return render(request, 'vircom/edit_data_type.html', context)
     if data_type.name == "":
         context["error_message"] = "Title field cannot be empty."
-        return render(request, 'vircom/new_data_type.html', context) 
+        return render(request, 'vircom/edit_data_type.html', context) 
     else:
         data_type.name = name
     if request.POST.get('name') == None:
         context["error_message_fields"] = "You need to add at least one field."
-        return render(request, 'vircom/new_data_type.html', context)    
+        return render(request, 'vircom/edit_data_type.html', context)    
     for key in range(len(response['name'])):
         if response['name'][key].strip() == "":
             context["error_message_fields"] = "Field Name cannot be empty."
-            return render(request, 'vircom/new_data_type.html', context) 
+            return render(request, 'vircom/edit_data_type.html', context) 
         else:     
             for field in f['fields']:
                 if response['name'][key].strip() == field['name']:
                     context["error_message_fields"] = "You cannot use same field name twice."
-                    return render(request, 'vircom/new_data_type.html', context)
+                    return render(request, 'vircom/edit_data_type.html', context)
         field_id = response['fieldId'][key]
         options = []
         field_enumerated = response['enumerated'+field_id][0]
@@ -682,7 +682,7 @@ def get_post_tags(tags):
             tags_dict['tags'].append({
                 "tag": tag,
                 "qid": items[0]["id"],
-                "lael": items[0]["label"],
+                "label": items[0]["label"],
                 "description": items[0]["description"],
                 "url": items[0]["concepturi"]
             })
@@ -835,7 +835,7 @@ def change_post(request, community_id, post_id):
                 if option_selected == "on":
                     value.append(option)  
             if value == [] and dt_field['required'] == "Yes":
-                return render(request, 'vircom/new_data_type_object.html', error_context)    
+                return render(request, 'vircom/edit_post.html', error_context)    
             elif value == [] and dt_field['required'] == "No":
                 value = "-" 
         elif dt_field['field_type'] == "Image" or dt_field['field_type'] == "Video" or dt_field['field_type'] == "Audio":
@@ -855,7 +855,7 @@ def change_post(request, community_id, post_id):
                 media_file.save()
                 value = media_file.url
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
-            return render(request, 'vircom/new_data_type_object.html', error_context) 
+            return render(request, 'vircom/edit_post.html', error_context) 
         else:
             value = str(request.POST[dt_field['name']]).strip()  
             if value == "" or value == "[Leave Empty]":

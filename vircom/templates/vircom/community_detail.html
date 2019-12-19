@@ -13,6 +13,154 @@
 </head>
 
 <body>
+
+    {% for data_type in data_type_list %}
+    {% if not data_type.is_archived %}
+    <!-- Modal -->
+    <div class="modal fade" id="searchModal{{data_type.pk}}" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content" style="width: 750px;">
+                <div class="modal-header">
+                    <h4 class="modal-title">Search for {{data_type.name}}</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+
+                    <form action="{% url 'vircom:advanced_search' community.id data_type.pk %}" method="post"
+                        novalidate>
+                        {% csrf_token %}
+                        {% for field in data_type.fields.fields %}
+                        <!-- Field Name -->
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-2 nopadding">
+                                    <div class="form-group">
+                                        <p style="display: inline; font-weight: bold;">
+                                            {{field.name }}
+                                        </p>
+                                        <input type="hidden" id="fieldName" name="field_name" value="{{field.name}}">
+                                    </div>
+                                </div>
+                                <!-- Match Condition -->
+                                {% if field.enumerated == "Yes" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type"
+                                            disabled="disabled">
+                                            <option>equals</option>
+                                        </select>
+                                        <input type="hidden" id="selectMatchType" name="match_type" value="equals">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>equals</option>
+                                            <option>contains</option>
+                                            <option>not contains</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Date" or field.field_type == "Time" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>is</option>
+                                            <option>later than</option>
+                                            <option>before than</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type"
+                                            disabled="disabled">
+                                            <option selected>Unavailable</option>
+                                        </select>
+                                        <input type="hidden" id="selectMatchType" name="match_type" value="Unavailable">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>equals</option>
+                                            <option>more than</option>
+                                            <option>less than</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <!-- Search Value -->
+                                {% if field.enumerated == "Yes" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="searchValue" name="value">
+                                            <option>[Leave Empty]</option>
+                                            {% for option in field.options %}
+                                            <option>{{option}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Date" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="date" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Time" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="time" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="searchValue" name="value" disabled="disabled">
+                                            <option selected>Unavailable</option>
+                                        </select>
+                                        <input type="hidden" id="searchValue" name="value" value="">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="number" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-outline-dark">Search</button>
+                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+                </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <!-- Modal -->
+    {% endif %}
+    {% endfor %}
+
+
+
+
     <!--    NAVBAR -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="{% url 'vircom:index' %}">VirCom</a>
@@ -198,156 +346,7 @@
 
                     </div>
 
-                    <!-- Modal -->
-                    <div class="modal fade" id="searchModal{{data_type.pk}}" role="dialog">
-                        <div class="modal-dialog">
 
-                            <!-- Modal content-->
-                            <div class="modal-content" style="width: 750px;">
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Search for {{data_type.name}}</h4>
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                </div>
-                                <div class="modal-body">
-
-                                    <form action="{% url 'vircom:advanced_search' community.id data_type.pk %}"
-                                        method="post" novalidate>
-                                        {% csrf_token %}
-                                        {% for field in data_type.fields.fields %}
-                                        <!-- Field Name -->
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <div class="col-sm-2 nopadding">
-                                                    <div class="form-group">
-                                                        <p style="display: inline; font-weight: bold;">{{field.name }}
-                                                        </p>
-                                                        <input type="hidden" id="fieldName" name="field_name"
-                                                            value="{{field.name}}">
-                                                    </div>
-                                                </div>
-                                                <!-- Match Condition -->
-                                                {% if field.enumerated == "Yes" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <select class="form-control" id="selectMatchType"
-                                                            name="match_type" disabled="disabled">
-                                                            <option>equals</option>
-                                                        </select>
-                                                        <input type="hidden" id="selectMatchType" name="match_type"
-                                                            value="equals">
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <select class="form-control" id="selectMatchType"
-                                                            name="match_type">
-                                                            <option selected>equals</option>
-                                                            <option>contains</option>
-                                                            <option>not contains</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Date" or field.field_type == "Time" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <select class="form-control" id="selectMatchType"
-                                                            name="match_type">
-                                                            <option selected>is</option>
-                                                            <option>later than</option>
-                                                            <option>before than</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <select class="form-control" id="selectMatchType"
-                                                            name="match_type" disabled="disabled">
-                                                            <option selected>Unavailable</option>
-                                                        </select>
-                                                        <input type="hidden" id="selectMatchType" name="match_type"
-                                                            value="Unavailable">
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <select class="form-control" id="selectMatchType"
-                                                            name="match_type">
-                                                            <option selected>equals</option>
-                                                            <option>more than</option>
-                                                            <option>less than</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                                <!-- Search Value -->
-                                                {% if field.enumerated == "Yes" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <select class="form-control" id="searchValue" name="value">
-                                                            <option>[Leave Empty]</option>
-                                                            {% for option in field.options %}
-                                                            <option>{{option}}</option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <input type="text" class="form-control" id="searchValue"
-                                                            name="value">
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Date" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <input type="date" class="form-control" id="searchValue"
-                                                            name="value">
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Time" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <input type="time" class="form-control" id="searchValue"
-                                                            name="value">
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <select class="form-control" id="searchValue" name="value"
-                                                            disabled="disabled">
-                                                            <option selected>Unavailable</option>
-                                                        </select>
-                                                        <input type="hidden" id="searchValue" name="value" value="">
-                                                    </div>
-                                                </div>
-                                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
-                                                <div class="col-sm-3 nopadding">
-                                                    <div class="form-group">
-                                                        <input type="number" class="form-control" id="searchValue"
-                                                            name="value">
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-outline-dark">Search</button>
-                                    <button type="button" class="btn btn-outline-danger"
-                                        data-dismiss="modal">Close</button>
-                                </div>
-                                </form>
-                            </div>
-
-                        </div>
-                    </div>
-                    <!-- Modal -->
                 </li>
                 {% endif %}
                 {% endfor %}
@@ -357,7 +356,7 @@
         <!--    DATA TYPES -->
     </div>
     </br></br>
-    
+
 
     <!--    FOOTER -->
     <nav class="navbar fixed-bottom navbar-expand-lg navbar-light bg-light" style="height: 25px;"></nav>
