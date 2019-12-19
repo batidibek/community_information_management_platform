@@ -48,6 +48,7 @@
 
 
     <br /><br />{% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>{% endif %}<br />
+    <br /><br />{% if search_results %}<p style="color: blue"><strong>{{ search_results }}</strong></p>{% endif %}<br />
     {% if data_type_object_list%}
     <ul>
         {% for post in data_type_object_list %}
@@ -248,7 +249,7 @@
                                         <select class="form-control" id="searchValue" name="value" disabled="disabled">
                                             <option selected>Unavailable</option>
                                         </select>
-                                        <input type="hidden" id="searchValue" name="value" value="Unavailable">
+                                        <input type="hidden" id="searchValue" name="value" value="">
                                     </div>
                                 </div>
                                 {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}

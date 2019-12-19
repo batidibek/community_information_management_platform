@@ -578,9 +578,9 @@ def create_data_type_object(request, community_id, data_type_id):
                     option_selected = "off"    
                 if option_selected == "on":
                     value.append(option)  
-            if value == "" and dt_field['required'] == "Yes":
+            if value == [] and dt_field['required'] == "Yes":
                 return render(request, 'vircom/new_data_type_object.html', error_context)    
-            elif value == "" and dt_field['required'] == "No":
+            elif value == [] and dt_field['required'] == "No":
                 value = "-" 
         elif dt_field['field_type'] == "Image" or dt_field['field_type'] == "Video" or dt_field['field_type'] == "Audio":
             user_file = ""
@@ -627,32 +627,40 @@ def create_data_type_object(request, community_id, data_type_id):
 
 def get_post_tags(tags):
     tags_array  = tags.split(",")
+    print(tags_array)
+    final_tags = []
     tags_dict = {}
     tags_dict['tags'] = []
     for tag in tags_array:
         if tag.strip() != "":
-            tags_dict['tags'].append({
-                "tag": tag.strip()
-            })
-        else:
-            return None
+            final_tags.append(tag.strip()) 
+    print(final_tags)               
+    if final_tags == []:
+        return None
     counter = 0
-    for tag in tags_dict['tags']:
-        items = get_wiki_data_items(tag["tag"], 1)
+    for tag in final_tags:
+        items = get_wiki_data_items(tag, 1)
         if items != []:
             if "description" not in items[0]:
                 items[0]["description"] = items[0]["label"]
-            tags_dict['tags'][counter]["qid"] = items[0]["id"]
-            tags_dict['tags'][counter]["label"] = items[0]["label"]
-            tags_dict['tags'][counter]["description"] = items[0]["description"]
-            tags_dict['tags'][counter]["url"] = items[0]["concepturi"]
+            tags_dict['tags'].append({
+                "tag": tag,
+                "qid": items[0]["id"],
+                "lael": items[0]["label"],
+                "description": items[0]["description"],
+                "url": items[0]["concepturi"]
+            })
         else:
-            wiki_item = {"id": "-", "label": tag["tag"], "description": "-", "url":"-"}
-            tags_dict['tags'][counter]["qid"] = wiki_item["id"]
-            tags_dict['tags'][counter]["label"] = wiki_item["label"]
-            tags_dict['tags'][counter]["description"] = wiki_item["description"]
-            tags_dict['tags'][counter]["url"] = wiki_item["url"]     
+            wiki_item = {"id": "-", "label": tag, "description": "-", "url":"-"}
+            tags_dict['tags'].append({
+                "tag": tag,
+                "qid": wiki_item["id"],
+                "label": wiki_item["label"],
+                "description": wiki_item["description"],
+                "url": wiki_item["url"],
+            })       
         counter = counter + 1
+    print(tags_dict)    
     return tags_dict
 
     # EDIT DATA TYPE OBJECT  
@@ -785,9 +793,9 @@ def change_post(request, community_id, post_id):
                     option_selected = "off"    
                 if option_selected == "on":
                     value.append(option)  
-            if value == "" and dt_field['required'] == "Yes":
+            if value == [] and dt_field['required'] == "Yes":
                 return render(request, 'vircom/new_data_type_object.html', error_context)    
-            elif value == "" and dt_field['required'] == "No":
+            elif value == [] and dt_field['required'] == "No":
                 value = "-" 
         elif dt_field['field_type'] == "Image" or dt_field['field_type'] == "Video" or dt_field['field_type'] == "Audio":
             user_file = ""
@@ -931,4 +939,114 @@ def log_out(request):
 
 def advanced_search(request, community_id, data_type_id):
     print(request.POST)
-    #TODO write advanced search function
+    community = get_object_or_404(Community, pk=community_id)
+    data_type_list = DataType.objects.filter(community=community).order_by('pk')
+    all_posts = DataTypeObject.objects.filter(community=community).order_by('-pub_date')
+    data_type = get_object_or_404(DataType, pk=data_type_id)
+    searched_posts = DataTypeObject.objects.filter(data_type=data_type).order_by('-pub_date')
+    context = {
+        'community': community,
+        'data_type_list':  data_type_list,
+        'data_type_object_list': all_posts,
+    }
+    # User check
+    if request.user.is_authenticated:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context["user"] = vircom_user
+        if community.pk in vircom_user.joined_communities:
+            context["joined"] = True
+    # Get data type fields and api response
+    dt_field = data_type.fields["fields"]
+    response = dict(request.POST.lists())
+    field_name = response['field_name']
+    match_type = response['match_type']
+    search_term = response['value']
+    # Advanced Search Starts
+    for key in range(len(field_name)):
+        # Field Name Error
+        if dt_field[key]["name"] != field_name[key]:
+                context["error_message"] = "Something went wrong."
+                return render(request, 'vircom/community_detail.html', context)
+        if search_term[key].strip() == '' or search_term[key] == '[Leave Empty]':
+            pass
+        else:
+            if dt_field[key]["enumerated"] == "Yes" :
+                matched_posts = []
+                for post in searched_posts:
+                    if search_term[key] in post.fields["fields"][key]["value"]:
+                        matched_posts.append(post)
+                    searched_posts = matched_posts
+            elif dt_field[key]["field_type"] == "Text" or dt_field[key]["field_type"] == "Long Text":
+                searched_posts = search_text(match_type[key], search_term[key].strip(), searched_posts, key)
+            elif dt_field[key]["field_type"] == "Integer" or dt_field[key]["field_type"] == "Decimal Number":
+                searched_posts = search_number(match_type[key], float(search_term[key].strip()), searched_posts, key)
+            elif dt_field[key]["field_type"] == "Date" or dt_field[key]["field_type"] == "Time":
+                searched_posts = search_datetime(match_type[key], search_term[key].strip(), searched_posts, key, dt_field[key]["field_type"])
+    context["search_results"] = str(len(searched_posts)) + " post(s) matched your search query."
+    context["data_type_object_list"] = searched_posts
+    return render(request, 'vircom/community_detail.html', context)
+
+def search_text(match_type, search_term, searched_posts, field):
+    matched_posts = []
+    if match_type == "equals":
+        for post in searched_posts:
+            if search_term.lower() == post.fields["fields"][field]["value"].lower():
+                matched_posts.append(post)
+    elif match_type == "contains":
+        for post in searched_posts:
+            if search_term.lower() in post.fields["fields"][field]["value"].lower():
+                matched_posts.append(post)
+    else:
+        for post in searched_posts:
+            if search_term.lower() not in post.fields["fields"][field]["value"].lower():
+                matched_posts.append(post)          
+    return matched_posts
+
+def search_number(match_type, search_term, searched_posts, field):
+    matched_posts = []
+    if match_type == "equals":
+        for post in searched_posts:
+            if search_term == float(post.fields["fields"][field]["value"]):
+                matched_posts.append(post)
+    elif match_type == "more than":
+        for post in searched_posts:
+            if search_term < float(post.fields["fields"][field]["value"]):
+                matched_posts.append(post)
+    else:
+        for post in searched_posts:
+            if search_term > float(post.fields["fields"][field]["value"]):
+                matched_posts.append(post)          
+    return matched_posts
+
+def search_datetime(match_type, search_term, searched_posts, field, field_type):
+    matched_posts = []
+    if field_type == "Date":
+        search_term = datetime.datetime.strptime(search_term, '%Y-%m-%d').date()
+        if match_type == "is":
+            for post in searched_posts:
+                if search_term == datetime.datetime.strptime(post.fields["fields"][field]["value"], '%Y-%m-%d').date():
+                    matched_posts.append(post)
+        elif match_type == "later than":
+            for post in searched_posts:
+                if search_term < datetime.datetime.strptime(post.fields["fields"][field]["value"], '%Y-%m-%d').date():
+                    matched_posts.append(post)
+        else:
+            for post in searched_posts:
+                if search_term > datetime.datetime.strptime(post.fields["fields"][field]["value"], '%Y-%m-%d').date():
+                    matched_posts.append(post)    
+    else:
+        search_term = datetime.datetime.strptime(search_term, '%H:%M').time()      
+        if match_type == "is":
+            for post in searched_posts:
+                if search_term == datetime.datetime.strptime(post.fields["fields"][field]["value"], '%H:%M').time():
+                    matched_posts.append(post)
+        elif match_type == "later than":
+            for post in searched_posts:
+                if search_term < datetime.datetime.strptime(post.fields["fields"][field]["value"], '%H:%M').time():
+                    matched_posts.append(post)
+        else:
+            for post in searched_posts:
+                if search_term > datetime.datetime.strptime(post.fields["fields"][field]["value"], '%H:%M').time():
+                    matched_posts.append(post)    
+    return matched_posts
+    
