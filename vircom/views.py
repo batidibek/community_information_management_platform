@@ -35,7 +35,27 @@ def index(request):
 
 # SEARCH COMMUNITY
 
-def search_community(request, search_term)
+def search_community(request, search_term):
+    search_term = str(request.POST.get('search_term', "")).strip()
+    if search_term == "":
+        community_list = Community.objects.order_by('-pub_date')[:30]
+    else:
+        community_list = Community.objects.filter(name__icontains=search_term).order_by('-pub_date')
+        search_result = str(len(community_list)) + " communities matched your search query."
+    if not request.user.is_authenticated:
+        context = {
+            'community_list': community_list,
+            'search result': search_result
+        }
+    else:
+        vircom_user = get_object_or_404(VircomUser, user=request.user)
+        context = {
+            'community_list': community_list,
+            'user': vircom_user,
+            'search result': search_result
+        }
+    return render(request, 'vircom/index.html', context)
+    
 
 # NEW COMMUNITY    
 
