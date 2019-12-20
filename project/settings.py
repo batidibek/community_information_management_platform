@@ -31,13 +31,13 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'vircom.apps.VircomConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'vircom'
 ]
 
 MIDDLEWARE = [
@@ -78,10 +78,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'vircomdb',
-        'USER': 'vircomuser',
+        'NAME': 'postgres',
+        'USER': 'postgres',
         'PASSWORD': 'vircompass',
-        'PORT': '5431',
+        'PORT': '5432',
     }
 }
 DATABASES['default']['HOST'] = '/cloudsql/vircom:us-central1:vircom-instance'
