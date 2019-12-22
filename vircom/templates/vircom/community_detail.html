@@ -269,7 +269,7 @@
                         <source src="{{field.value}}" type="audio/mpeg">
                         Your browser does not support the audio tag.
                     </audio>
-                    {% elif field.field_type == "Location"}
+                    {% elif field.field_type == "Location" and field.value != "-" %} 
                     <a href="https://www.google.com/maps/search/?api=1&query={{field.value.lat}},{{field.value.lon}}">See Location on Google Maps</a>
                     {% elif field.multi_choice == "off" %}
                     {{field.value}}

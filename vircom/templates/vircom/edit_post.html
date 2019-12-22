@@ -151,9 +151,9 @@
                     </div>
                 </div>
                 {% elif field.field_type == "Location"%}
-                <input type="number" step=0.00001 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                <input type="number" step=0.0000001 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                     placeholder="Latitude" value="{{field.value.lat}}" name="{{field.name}}lat">
-                <input type="number" step=0.00001 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
+                <input type="number" step=0.0000001 class="form-control" id="{{field.name}}" aria-describedby="{{field.name}}"
                     placeholder="Longitude" value="{{field.value.lon}}" name="{{field.name}}lon">
                 {% endif %}
                 {% if field.required == "Yes" %}
