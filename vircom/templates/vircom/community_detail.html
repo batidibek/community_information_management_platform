@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--    Load Bootstrap via CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    {% load static %}
+    <link href="{% static 'vircom/css/text_boxes.css' %}" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+    {% for data_type in data_type_list %}
+    {% if not data_type.is_archived %}
+    <!-- Modal -->
+    <div class="modal fade" id="searchModal{{data_type.pk}}" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content" style="width: 750px;">
+                <div class="modal-header">
+                    <h4 class="modal-title">Search for {{data_type.name}}</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+
+                    <form action="{% url 'vircom:advanced_search' community.id data_type.pk %}" method="post"
+                        novalidate>
+                        {% csrf_token %}
+                        {% for field in data_type.fields.fields %}
+                        <!-- Field Name -->
+                        {% if field.field_type != "Location" %}
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-2 nopadding">
+                                    <div class="form-group">
+                                        <p style="display: inline; font-weight: bold;">
+                                            {{field.name }}
+                                        </p>
+                                        <input type="hidden" id="fieldName" name="field_name" value="{{field.name}}">
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <!-- Match Condition -->
+                                {% if field.enumerated == "Yes" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type"
+                                            disabled="disabled">
+                                            <option>equals</option>
+                                        </select>
+                                        <input type="hidden" id="selectMatchType" name="match_type" value="equals">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>equals</option>
+                                            <option>contains</option>
+                                            <option>not contains</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Date" or field.field_type == "Time" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>is</option>
+                                            <option>later than</option>
+                                            <option>before than</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type"
+                                            disabled="disabled">
+                                            <option selected>Unavailable</option>
+                                        </select>
+                                        <input type="hidden" id="selectMatchType" name="match_type" value="Unavailable">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="selectMatchType" name="match_type">
+                                            <option selected>equals</option>
+                                            <option>more than</option>
+                                            <option>less than</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <!-- Search Value -->
+                                {% if field.enumerated == "Yes" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="searchValue" name="value">
+                                            <option>[Leave Empty]</option>
+                                            {% for option in field.options %}
+                                            <option>{{option}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Text" or field.field_type == "Long Text" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Date" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="date" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Time" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="time" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Image" or field.field_type == "Video" or field.field_type == "Audio" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <select class="form-control" id="searchValue" name="value" disabled="disabled">
+                                            <option selected>Unavailable</option>
+                                        </select>
+                                        <input type="hidden" id="searchValue" name="value" value="">
+                                    </div>
+                                </div>
+                                {% elif field.field_type == "Integer" or field.field_type == "Decimal Number" %}
+                                <div class="col-sm-3 nopadding">
+                                    <div class="form-group">
+                                        <input type="number" class="form-control" id="searchValue" name="value">
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-outline-dark">Search</button>
+                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+                </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <!-- Modal -->
+    {% endif %}
+    {% endfor %}
+
+
+
+
+    <!--    NAVBAR -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'vircom:index' %}">VirCom</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'vircom:index' %}">Home</a>
+                </li>
+                {% if user.user %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:new_community'%}">New Community</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link active"
+                        href="{% url 'vircom:community_detail' community.name %}">{{ community.name }}<span
+                            class="sr-only">(current)</span></a>
+                </li>
+                {% if user.user %}
+                {% if joined %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:new_data_type' community.name%}">New Data Type</a>
+                </li>
+                {% endif %}
+                {% endif %}
+            </ul>
+            <div style="float: right; margin-right: 30px;">
+                {% if user.user %}
+                {% if joined %}
+                <form class="form-inline my-2 my-lg-0" action="{% url 'vircom:unsubscribe_community' community.pk %}">
+                    <button type='submit' class="btn btn-outline-danger my-2 my-sm-0">Unsubscribe</button>
+                </form>
+                {% else %}
+                <form class="form-inline my-2 my-lg-0" action="{% url 'vircom:join_community' community.pk %}"><button
+                        type='submit' class="btn btn-outline-primary my-2 my-sm-0">Join</button></form>
+                {% endif %}
+                {% endif %}
+            </div>
+            <ul class="navbar-nav" style="float: right;">
+                {% if user.user %}
+                <li class="nav-item">
+                    <a class="nav-link disabled">Hi, {{user.user.username}}!</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:log_out'%}">Log Out</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:log_in'%}">Log In</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'vircom:sign_up'%}">Sign Up</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <!--    NAVBAR -->
+    <br /><br /><br /><br />
+
+    <div class="container" style="width: 1000px; margin:0 auto;">
+        <div>
+            <h3>{{ community.name }}</h3>
+            <div style="display: inline;" class="input-group">{% for tag in community.tags.tags%}<p class="WikiItemTag">
+                    {{tag.tag}}<span class="textboxwWikiInfo"><a href="{{tag.url}}"
+                            style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>
+                &nbsp;&nbsp;&nbsp;&nbsp;{% endfor %}
+            </div>
+        </div>
+        <br />
+
+        {% if error_message %}<p style="color: red"><strong>{{ error_message }}</strong></p>
+        {% endif %}
+        {% if search_results %}<p style="color: blue"><strong>{{ search_results }}</strong></p>
+        {% endif %}
+
+        <!--    POST LIST -->
+        <div style="float: left; width: 600px;">
+            {% if data_type_object_list%}
+            {% for post in data_type_object_list %}
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <h5>{{ post.data_type.name }}</h5>
+                </li>
+                {% for field in post.fields.fields %}
+                <li class="list-group-item">
+
+                    <b>{{field.name}}:</b>
+                    {% if field.field_type == "Image" and field.value != "-" %}
+                    <img src="{{field.value}}" style="width: 320px;" />
+                    {% elif field.field_type == "Video" and field.value != "-" %}
+                    <video width="320" controls>
+                        <source src="{{field.value}}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    {% elif field.field_type == "Audio" and field.value != "-" %}
+                    <audio controls>
+                        <source src="{{field.value}}" type="audio/wav">
+                        <source src="{{field.value}}" type="audio/mpeg">
+                        Your browser does not support the audio tag.
+                    </audio>
+                    {% elif field.field_type == "Location" and field.value != "-" %} 
+                    <a href="https://www.google.com/maps/search/?api=1&query={{field.value.lat}},{{field.value.lon}}">See Location on Google Maps</a>
+                    {% elif field.multi_choice == "off" %}
+                    {{field.value}}
+                    {% else %}
+                    {% for value in field.value %}
+                    {{value}} &nbsp;
+                    {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                </li>
+                {% if post.tags.tags %}
+                <li class="list-group-item">
+                    {% for tag in post.tags.tags%}
+                    <p class="WikiItemTag">{{tag.tag}}<span class="textboxwWikiInfo"><a href="{{tag.url}}"
+                                style="color:#FFFF;">{{tag.qid}}-{{tag.label}}<br />{{tag.description}}</a></span></p>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    {% endfor %}
+                </li>
+                {% endif %}
+                <li class="list-group-item">
+                    <div style="float: right;">{{post.user.username}}&nbsp;&nbsp;&nbsp;<i>posted
+                            on</i>&nbsp;&nbsp;&nbsp;{{post.pub_date}}</div>
+                </li>
+                {% if post.user == user.user %}
+                <li class="list-group-item">
+                    <div style="float: right;">
+                        <form style="display: inline;" action="{% url 'vircom:edit_post' community.name post.pk %}">
+                            <button class="btn btn-outline-primary" type='submit'>Edit</button>
+                        </form>
+                        <form style="display: inline;" action="{% url 'vircom:delete_post' community.id post.pk %}">
+                            <button class="btn btn-outline-danger" type='submit'>Delete</button>
+                        </form>
+                    </div>
+                </li>
+                {% endif %}
+            </ul>
+            </br>
+            {% endfor %}
+            {% else %}
+            <p>There is no post in this community.</p>
+            {% endif %}
+        </div>
+        <!--    POST LIST -->
+
+        <!--    DATA TYPES -->
+        <div style="float: right; width: 300px; margin-left: 670px;" class="position-fixed">
+            {% if data_type_list %}
+            <ul class="list-group">
+                {% for data_type in data_type_list %}
+                {% if not data_type.is_archived %}
+                <li class="list-group-item">
+                    <p style="display: inline; font-weight: bold;">{{data_type.name }}</p>
+
+                    <div style="margin-top: 5px;">
+                        {% if joined %}
+                        <form style="display: inline;"
+                            action="{% url 'vircom:new_data_type_object' community.name data_type.pk %}">
+                            <button style="padding: 5px;" class="btn btn-outline-success" type='submit'>Create</button>
+                        </form>
+                        {% endif %}
+                        <button style="padding: 5px; margin-left: 5px;" class="btn btn-outline-dark" data-toggle="modal"
+                            data-target="#searchModal{{data_type.pk}}" type='button'>Search</button>
+                        {% if data_type.name != "Generic Post" %}
+                        {% if data_type.user == user.user %}
+                        <form style="display: inline;"
+                            action="{% url 'vircom:edit_data_type' community.name data_type.pk %}">
+                            <button style="padding: 5px; margin-left: 5px;" class="btn btn-outline-primary"
+                                type='submit'>Edit</button>
+                        </form>
+                        <form style="display: inline;"
+                            action="{% url 'vircom:delete_data_type' community.pk data_type.pk %}">
+                            <button style="padding: 5px; margin-left: 5px;" class="btn btn-outline-danger"
+                                type='submit'>Delete</button>
+                        </form>
+
+                        {% endif %}
+                        {% endif %}
+
+                    </div>
+
+
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <!--    DATA TYPES -->
+    </div>
+    </br></br>
+
+
+    <!--    FOOTER -->
+    <nav class="navbar fixed-bottom navbar-expand-lg navbar-light bg-light" style="height: 25px;"></nav>
+    <!--    FOOTER -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
