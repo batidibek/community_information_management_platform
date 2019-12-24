@@ -33,6 +33,7 @@
                         {% csrf_token %}
                         {% for field in data_type.fields.fields %}
                         <!-- Field Name -->
+                        {% if field.field_type != "Location" %}
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-2 nopadding">
@@ -43,6 +44,7 @@
                                         <input type="hidden" id="fieldName" name="field_name" value="{{field.name}}">
                                     </div>
                                 </div>
+                                {% endif %}
                                 <!-- Match Condition -->
                                 {% if field.enumerated == "Yes" %}
                                 <div class="col-sm-3 nopadding">
@@ -267,6 +269,8 @@
                         <source src="{{field.value}}" type="audio/mpeg">
                         Your browser does not support the audio tag.
                     </audio>
+                    {% elif field.field_type == "Location" and field.value != "-" %} 
+                    <a href="https://www.google.com/maps/search/?api=1&query={{field.value.lat}},{{field.value.lon}}">See Location on Google Maps</a>
                     {% elif field.multi_choice == "off" %}
                     {{field.value}}
                     {% else %}

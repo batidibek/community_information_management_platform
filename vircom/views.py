@@ -634,6 +634,13 @@ def create_data_type_object(request, community_id, data_type_id):
                 media_file.url = "/media/" + str(media_file.upload)
                 media_file.save()
                 value = media_file.url
+        elif dt_field['field_type'] == "Location":
+            if str(request.POST[dt_field['name'] + "lat"]).strip() == "" or str(request.POST[dt_field['name'] + "lon"]).strip() == "":
+                if dt_field['required'] == "Yes":
+                    return render(request, 'vircom/new_data_type_object.html', error_context) 
+                else:
+                    value = "-"
+            value ={"lat": str(request.POST[dt_field['name'] + "lat"]).strip(), "lon": str(request.POST[dt_field['name'] + "lon"]).strip()}
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
             return render(request, 'vircom/new_data_type_object.html', error_context) 
         else:
@@ -854,6 +861,13 @@ def change_post(request, community_id, post_id):
                 media_file.url = "/media/" + str(media_file.upload)
                 media_file.save()
                 value = media_file.url
+        elif dt_field['field_type'] == "Location":
+            if str(request.POST[dt_field['name'] + "lat"]).strip() == "" or str(request.POST[dt_field['name'] + "lon"]).strip() == "":
+                if dt_field['required'] == "Yes":
+                    return render(request, 'vircom/edit_post.html', error_context) 
+                else:
+                    value = "-"
+            value ={"lat": str(request.POST[dt_field['name'] + "lat"]).strip(), "lon": str(request.POST[dt_field['name'] + "lon"]).strip()}
         elif str(request.POST[dt_field['name']]).strip() == "" and dt_field['required'] == "Yes":
             return render(request, 'vircom/edit_post.html', error_context) 
         else:
