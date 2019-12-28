@@ -7,7 +7,7 @@ Community Website: https://vircom.appspot.com/vircom/
 
 First of all, Project requires Python 3.4 or higher version. To get Python, you can follow the instructions on https://www.python.org/downloads/.  
 
-Now, open the Project the Project and to be able to work on the Project you need to activate virtual environment by running the commands below on your command line/terminal;  
+Now, open the Project and to be able to work on the Project you need to activate virtual environment by running the commands below on your command line/terminal;  
 
 virtualenv env   
 source env/bin/activate   
